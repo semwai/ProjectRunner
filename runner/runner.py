@@ -13,7 +13,7 @@ class Runner:
         self.folder = tempfile.TemporaryDirectory()
         self.container = client.containers.run(
             'python:3.10-alpine',
-            command=f"python",
+            command=f"sleep infinity",
             working_dir='/app',
             volumes=[f'{Path(self.folder.name)}:/app'],
             tty=True,
