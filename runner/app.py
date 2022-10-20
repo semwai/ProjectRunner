@@ -34,10 +34,11 @@ print(f"Message after 2 seconds, value^2={a**2}")
             var ws = new WebSocket("ws://localhost:8001/ws");
             ws.onmessage = function(event) {
                 var messages = document.getElementById('messages')
-                var message = document.createElement('p')
-                var content = document.createTextNode(event.data)
-                message.appendChild(content)
-                messages.appendChild(message)
+                //var message = document.createElement('am')
+                //var content = document.createTextNode(event.data)
+                //message.appendChild(content)
+                //messages.appendChild(message)
+                messages.innerHTML += event.data
             };
             function newProgramm(event) {
                 document.getElementById("messages").innerHTML = ""
@@ -88,7 +89,7 @@ class RunModel:
 
     def write(self, data):
         if self.exec.status()['Running']:
-            return self.exec.write(data + "\r\n")
+            return self.exec.write(data + "\n")
         else:
             return self.exec.status()['ExitCode']
 
@@ -120,11 +121,13 @@ async def websocket_endpoint(websocket: WebSocket):
             continue
 
         if (ret := run_model.read()) is not None:
+            ret = ret.replace("\r\n", "<br>")
             await websocket.send_text(ret)
 
         status = run_model.status()
         if not status['Running']:
             await websocket.send_text(f"Process finished with exit code {status['ExitCode']}")
+            run_model = None
 
 
 if __name__ == '__main__':
