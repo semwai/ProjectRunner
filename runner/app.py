@@ -75,7 +75,7 @@ async def websocket_endpoint(websocket: WebSocket):
     r.add_file('app.py', data)
     exec = r.exec('python app.py')
     pool = read_pool(exec)
-    while True:
+    while exec.status()['Running']:
         # data = await websocket.receive_text()
 
         # await write_pool(exec, data)
@@ -83,6 +83,7 @@ async def websocket_endpoint(websocket: WebSocket):
         # await websocket.send_text(await read_pool(exec))
         for text in pool:
             await websocket.send_text(text)
+    print("CLOSE")
 
 
 if __name__ == '__main__':
