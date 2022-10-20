@@ -12,6 +12,7 @@ class Execution:
     def __init__(self, exec):
         self.exec = exec
         self.socket = client.api.exec_start(self.exec['Id'], socket=True, tty=True)
+        self.socket._sock.settimeout(0.2)
 
     def write(self, data: str):
         """write data to stdin"""
@@ -46,7 +47,6 @@ class Runner:
 
     def exec(self, command):
         return Execution(client.api.exec_create(self.container.id, command, tty=True, stdin=True))
-        #return self.container.exec_run(command, tty=True, stdin=True, socket=True, demux=True)
 
     def __del__(self):
         self.container.remove(force=True)

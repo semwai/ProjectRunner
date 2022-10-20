@@ -11,34 +11,45 @@ html = """
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Chat</title>
+        <title>Example</title>
     </head>
     <body>
         <h1>Python online</h1>
-        <form action="" onsubmit="sendMessage(event)">
+        <div>
             <textarea id="messageText" autocomplete="off" rows=25 cols=80>
 import time
 print("Hello world")
+a = int(input("value:"))
 time.sleep(2)
-print("Message after 2 seconds")
+print(f"Message after 2 seconds, value^2={a**2}")
             </textarea>
-            <p><button>Send</button></p>
-        </form>
-        <ul id='messages'>
-        </ul>
+            <p><button onclick="newProgramm(event)">Run</button></p>
+        </div>
+        <p>stdin:</p>
+        <p><input type=text id="stdIOText"/><button onclick="newstdIO(event)">send</button></p>
+        <p>stdout:</p>
+        <div id='messages' style='font-family:Monospace;'>
+        </div>
         <script>
             var ws = new WebSocket("ws://localhost:8001/ws");
             ws.onmessage = function(event) {
                 var messages = document.getElementById('messages')
-                var message = document.createElement('li')
+                var message = document.createElement('p')
                 var content = document.createTextNode(event.data)
                 message.appendChild(content)
                 messages.appendChild(message)
             };
-            function sendMessage(event) {
+            function newProgramm(event) {
+                document.getElementById("messages").innerHTML = ""
                 var input = document.getElementById("messageText")
-                ws.send(input.value)
-                input.value = ''
+                ws.send(JSON.stringify({type: 'programm', data: input.value}))
+                //input.value = ''
+                event.preventDefault()
+            }
+            function newstdIO(event) {
+                var input = document.getElementById("stdIOText")
+                ws.send(JSON.stringify({type: 'stdio', data: input.value}))
+                //input.value = ''
                 event.preventDefault()
             }
         </script>
@@ -67,23 +78,53 @@ async def write_pool(exec, data):
         await asyncio.sleep(1)
 
 
+class RunModel:
+
+    def __init__(self, text):
+        self.runner = Runner()
+        self.runner.add_file('app.py', text)
+        self.exec = self.runner.exec('python app.py')
+        print(self.exec.status())
+
+    def write(self, data):
+        if self.exec.status()['Running']:
+            return self.exec.write(data + "\r\n")
+        else:
+            return self.exec.status()['ExitCode']
+
+    def read(self):
+        try:
+            return self.exec.read()
+        except TimeoutError:
+            return None
+
+    def status(self):
+        return self.exec.status()
+
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    r = Runner()
-    data = await websocket.receive_text()
-    r.add_file('app.py', data)
-    exec = r.exec('python app.py')
-    pool = read_pool(exec)
-    while exec.status()['Running']:
-        # data = await websocket.receive_text()
+    run_model = None
 
-        # await write_pool(exec, data)
+    while True:
+        data = await websocket.receive_json()
+        match data['type']:
+            case "programm":
+                run_model = RunModel(data['data'])
+            case "stdio":
+                if run_model is not None:
+                    run_model.write(data['data'])
 
-        # await websocket.send_text(await read_pool(exec))
-        for text in pool:
-            await websocket.send_text(text)
-    print("CLOSE")
+        if run_model is None:
+            continue
+
+        if (ret := run_model.read()) is not None:
+            await websocket.send_text(ret)
+
+        status = run_model.status()
+        if not status['Running']:
+            await websocket.send_text(f"Process finished with exit code {status['ExitCode']}")
 
 
 if __name__ == '__main__':
