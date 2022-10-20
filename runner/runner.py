@@ -12,7 +12,7 @@ class Runner:
     def __init__(self):
         self.folder = tempfile.TemporaryDirectory()
         self.container = client.containers.run(
-            'python:3.10-alpine',
+            'python:3.10',
             command=f"sleep infinity",
             working_dir='/app',
             volumes=[f'{Path(self.folder.name)}:/app'],
@@ -27,7 +27,7 @@ class Runner:
             file.write(data)
 
     def exec(self, command):
-        return self.container.exec_run(command)
+        return self.container.exec_run(command, tty=True, stdin=True, socket=True, demux=True)
 
     def __del__(self):
         self.container.remove(force=True)
