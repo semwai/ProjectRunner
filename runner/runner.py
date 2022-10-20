@@ -1,34 +1,34 @@
-import logging
 import tempfile
+import shutil
 from pathlib import Path
-
 import docker
-from docker.errors import ContainerError
 
 
-def build():
-    client = docker.from_env()
-    client.images.build(path='.', tag='kotlin1720')
+client = docker.from_env()
 
 
-def run(code: str, filename: str):
-    # Создаю временную папку, которая удалится после выполнения функции
-    with tempfile.TemporaryDirectory() as dir:
-        print(dir)
-        # Имя исходного файла
-        name = Path(dir) / filename
-        # Записываю код
-        with open(name, 'w') as file:
-            file.write(code)
+class Runner:
 
-        client = docker.from_env()
-
-        result = client.containers.run(
+    def __init__(self):
+        self.folder = tempfile.TemporaryDirectory()
+        self.container = client.containers.run(
             'python:3.10-alpine',
-            command=f"python {filename}",
+            command=f"python",
             working_dir='/app',
-            volumes=[f'{Path(dir)}:/app'],
-            stdin_open=True,
-            remove=True
+            volumes=[f'{Path(self.folder.name)}:/app'],
+            tty=True,
+            detach=True,
+            network_disabled=True,
         )
-        return result
+
+    def add_file(self, filename: str, data: str):
+        name = Path(self.folder.name) / filename
+        with open(name, 'w') as file:
+            file.write(data)
+
+    def exec(self, command):
+        return self.container.exec_run(command)
+
+    def __del__(self):
+        self.container.remove(force=True)
+        shutil.rmtree(self.folder.name, ignore_errors=True)
