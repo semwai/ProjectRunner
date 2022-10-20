@@ -7,6 +7,24 @@ import docker
 client = docker.from_env()
 
 
+class Execution:
+
+    def __init__(self, exec):
+        self.exec = exec
+        self.socket = client.api.exec_start(self.exec['Id'], socket=True, tty=True)
+
+    def write(self, data: str):
+        """write data to stdin"""
+        return self.socket._sock.send(data.encode('utf-8'))
+
+    def read(self):
+        """read from stdout/stderr""" # only 1024!!
+        return self.socket._sock.recv(1024).decode()
+
+    def status(self):
+        return client.api.exec_inspect(self.exec['Id'])
+
+
 class Runner:
 
     def __init__(self):
@@ -27,7 +45,8 @@ class Runner:
             file.write(data)
 
     def exec(self, command):
-        return self.container.exec_run(command, tty=True, stdin=True, socket=True, demux=True)
+        return Execution(client.api.exec_create(self.container.id, command, tty=True, stdin=True))
+        #return self.container.exec_run(command, tty=True, stdin=True, socket=True, demux=True)
 
     def __del__(self):
         self.container.remove(force=True)
