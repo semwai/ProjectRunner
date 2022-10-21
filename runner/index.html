@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Example</title>
+    </head>
+    <body>
+        <h1>Python online</h1>
+        <div>
+            <textarea id="messageText" autocomplete="off" rows=25 cols=80>
+import time
+print("Hello world")
+a = int(input("value:"))
+time.sleep(2)
+print(f"Message after 2 seconds, value^2={a**2}")
+            </textarea>
+            <p><button onclick="newProgramm(event)">Run</button></p>
+        </div>
+        <p>stdin:</p>
+        <p><input type=text id="stdIOText"/><button onclick="newstdIO(event)">send</button></p>
+        <p>stdout:</p>
+        <pre id='messages' style='font-family:Monospace;'>
+        </pre>
+        <script>
+var ws = new WebSocket("ws://localhost:8001/ws");
+ws.onmessage = function(event) {
+    var messages = document.getElementById('messages')
+    //var message = document.createElement('am')
+    //var content = document.createTextNode(event.data)
+    //message.appendChild(content)
+    //messages.appendChild(message)
+    messages.innerHTML += event.data
+};
+function newProgramm(event) {
+    document.getElementById("messages").innerHTML = ""
+    var input = document.getElementById("messageText")
+    ws.send(JSON.stringify({type: 'programm', data: input.value}))
+    //input.value = ''
+    event.preventDefault()
+}
+function newstdIO(event) {
+    var input = document.getElementById("stdIOText")
+    ws.send(JSON.stringify({type: 'stdio', data: input.value}))
+    //input.value = ''
+    event.preventDefault()
+}
+        </script>
+    </body>
+</html>
