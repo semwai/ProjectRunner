@@ -64,28 +64,13 @@ async def get():
     return HTMLResponse(html)
 
 
-def read_pool(exec):
-    while exec.status()['Running']:
-        try:
-            yield exec.read()
-        except TimeoutError:
-            pass
-        time.sleep(1)
-
-
-async def write_pool(exec, data):
-    while exec.status()['Running']:
-        exec.write(data)
-        await asyncio.sleep(1)
-
-
 class RunModel:
-
+    """Контроллер запущенной команды"""
     def __init__(self, text):
         self.runner = Runner()
         self.runner.add_file('app.py', text)
         self.exec = self.runner.exec('python app.py')
-        print(self.exec.status())
+        # print(self.exec.status())
 
     def write(self, data):
         if self.exec.status()['Running']:
@@ -110,11 +95,12 @@ async def websocket_endpoint(websocket: WebSocket):
 
     while True:
 
+        # Жду сообщение от клиента, если не придет сообщение, то иду дальше проверять сообщения от контейнера
         try:
             data = await asyncio.wait_for(fut=websocket.receive_json(), timeout=1)
         except asyncio.exceptions.TimeoutError:
             data = None
-
+        # Если придет сообщение от клиента, то проверяю его
         if data is not None:
             match data['type']:
                 case "programm":
@@ -122,13 +108,13 @@ async def websocket_endpoint(websocket: WebSocket):
                 case "stdio":
                     if run_model is not None:
                         run_model.write(data['data'])
-
+        # Если код еще не был запущен
         if run_model is None:
             continue
-
+        # Пытаюсь получить данные из контейнера
         if (ret := run_model.read()) is not None:
             await websocket.send_text(ret)
-
+        # Если выполнение завершено, то вывести код результата
         status = run_model.status()
         if not status['Running']:
             await websocket.send_text(f"Process finished with exit code {status['ExitCode']}")
