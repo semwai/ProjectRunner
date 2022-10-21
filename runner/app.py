@@ -1,8 +1,9 @@
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import HTMLResponse
+from starlette.websockets import WebSocketDisconnect
 import asyncio
 import uvicorn
-import time
+
 from runner import Runner
 
 app = FastAPI()
@@ -46,9 +47,14 @@ async def websocket_endpoint(websocket: WebSocket):
 
         # Жду сообщение от клиента, если не придет сообщение, то иду дальше проверять сообщения от контейнера
         try:
-            data = await asyncio.wait_for(fut=websocket.receive_json(), timeout=1)
+            # receive_json - блокирующая операция, поэтому выделяю ей максимум timeout и иду смотреть за контейнером
+            data = await asyncio.wait_for(fut=websocket.receive_json(), timeout=0.1)
         except asyncio.exceptions.TimeoutError:
             data = None
+        # Клиент может отлючиться
+        except WebSocketDisconnect:
+            print("client disconnect")
+            break
         # Если придет сообщение от клиента, то проверяю его
         if data is not None:
             match data['type']:

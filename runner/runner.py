@@ -12,7 +12,8 @@ class Execution:
     def __init__(self, exec):
         self.exec = exec
         self.socket = client.api.exec_start(self.exec['Id'], socket=True, tty=True, demux=True)
-        self.socket._sock.settimeout(0.2)
+        # Сокет перестаёт блокировать при чтении, но если сокет пуст, то будет вылетать BlockingIOError
+        self.socket._sock.setblocking(0)
 
     def write(self, data: str):
         """write data to stdin"""
@@ -20,7 +21,10 @@ class Execution:
 
     def read(self):
         """read from stdout/stderr""" # only 1024!!
-        return self.socket._sock.recv(1024).decode()
+        try:
+            return self.socket._sock.recv(1024).decode()
+        except BlockingIOError:
+            return None
 
     def status(self):
         """Позвлоляет узнать завершила ли работу команда и узнать код возврата"""

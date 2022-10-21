@@ -12,6 +12,14 @@ print("Hello world")
 a = int(input("value:"))
 time.sleep(2)
 print(f"Message after 2 seconds, value^2={a**2}")
+while True:
+    c = input()
+    if c == 'exit':
+         break
+    if c == 'error':
+         1/0
+    print('next')
+
             </textarea>
             <p><button onclick="newProgramm(event)">Run</button></p>
         </div>
