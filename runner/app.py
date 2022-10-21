@@ -28,8 +28,8 @@ print(f"Message after 2 seconds, value^2={a**2}")
         <p>stdin:</p>
         <p><input type=text id="stdIOText"/><button onclick="newstdIO(event)">send</button></p>
         <p>stdout:</p>
-        <div id='messages' style='font-family:Monospace;'>
-        </div>
+        <pre id='messages' style='font-family:Monospace;'>
+        </pre>
         <script>
             var ws = new WebSocket("ws://localhost:8001/ws");
             ws.onmessage = function(event) {
@@ -121,7 +121,6 @@ async def websocket_endpoint(websocket: WebSocket):
             continue
 
         if (ret := run_model.read()) is not None:
-            ret = ret.replace("\r\n", "<br>")
             await websocket.send_text(ret)
 
         status = run_model.status()
