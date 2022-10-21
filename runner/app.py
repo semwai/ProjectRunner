@@ -109,13 +109,19 @@ async def websocket_endpoint(websocket: WebSocket):
     run_model = None
 
     while True:
-        data = await websocket.receive_json()
-        match data['type']:
-            case "programm":
-                run_model = RunModel(data['data'])
-            case "stdio":
-                if run_model is not None:
-                    run_model.write(data['data'])
+
+        try:
+            data = await asyncio.wait_for(fut=websocket.receive_json(), timeout=1)
+        except asyncio.exceptions.TimeoutError:
+            data = None
+
+        if data is not None:
+            match data['type']:
+                case "programm":
+                    run_model = RunModel(data['data'])
+                case "stdio":
+                    if run_model is not None:
+                        run_model.write(data['data'])
 
         if run_model is None:
             continue
