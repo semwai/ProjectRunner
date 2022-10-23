@@ -17,22 +17,21 @@ import (
 func f(from string) {
     for i := 0; i < 3; i++ {
         fmt.Println(from, ":", i)
+        time.Sleep(time.Second)
     }
 }
 
 func main() {
-    fmt.Println("enter value:")
+
     var text string
+    fmt.Println("enter value:")
     fmt.Scan(&text)
     f(text)
 
-    go f("goroutine")
+    go f("goroutine1")
+    go f("goroutine2")
 
-    go func(msg string) {
-        fmt.Println(msg)
-    }("going")
-
-    time.Sleep(time.Second)
+    time.Sleep(time.Second * 4)
     fmt.Println("done")
 }
             </textarea>
