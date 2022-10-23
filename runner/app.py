@@ -18,9 +18,9 @@ class RunModel:
     """Контроллер запущенной команды"""
     def __init__(self, text):
         self.runner = Runner()
-        self.runner.add_file('app.py', text)
+        self.runner.add_file('app.go', text)
         self.runner.add_file('test.txt', '1234')
-        self.exec = self.runner.command('python app.py')
+        self.exec = self.runner.command('go run app.go')
         # print(self.exec.status())
 
     def write(self, data):

@@ -61,7 +61,7 @@ class Runner:
         self.folder = tempfile.TemporaryDirectory()
         self.volume = client.volumes.create()
         self.container = client.containers.run(
-            'python:3.10',
+            'golang:alpine',
             command='sleep infinity',
             working_dir='/app',
             volumes=[f'{self.volume.id}:/app'],
@@ -89,7 +89,7 @@ class Runner:
     def command(self, command):
         """Выполнить команду, аналог docker exec"""
         return Execution(client.containers.create(
-            'python:3.10',
+            'golang:alpine',
             command=command,
             working_dir='/app',
             volumes=[f'{self.volume.id}:/app'],
