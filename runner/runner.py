@@ -15,12 +15,12 @@ class Execution:
         self.stdin = client.api.attach_socket(container.id, params={'stdin': 1, 'stdout': 0, 'stderr': 0, 'stream': 1})
         self.stdout = client.api.attach_socket(container.id, params={'stdin': 0, 'stdout': 1, 'stderr': 0, 'stream': 1})
         self.stderr = client.api.attach_socket(container.id, params={'stdin': 0, 'stdout': 0, 'stderr': 1, 'stream': 1})
-        # Сокет перестаёт блокировать при чтении, но если сокет пуст, то будет вылетать BlockingIOError
+        # Сокет перестаёт блокировать при чтении, если сокет пуст, то вместо байт выдается None
         self.stdin._sock.setblocking(0)
+        # Разрешаю запись в сокет
         self.stdin._writing = True
         self.stdout._sock.setblocking(0)
         self.stderr._sock.setblocking(0)
-        print()
 
     def write(self, data: str):
         """write data to stdin"""
