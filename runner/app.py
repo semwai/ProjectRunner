@@ -19,7 +19,8 @@ class RunModel:
     def __init__(self, text):
         self.runner = Runner()
         self.runner.add_file('app.py', text)
-        self.exec = self.runner.exec('python app.py')
+        self.runner.add_file('test.txt', '1234')
+        self.exec = self.runner.command('python app.py')
         # print(self.exec.status())
 
     def write(self, data):
@@ -67,8 +68,9 @@ async def websocket_endpoint(websocket: WebSocket):
         if run_model is None:
             continue
         # Пытаюсь получить данные из контейнера
-        if (ret := run_model.read()) is not None:
-            await websocket.send_text(ret)
+        if (ret := run_model.read()) != (None, None):
+            stdout, stderr = ret
+            await websocket.send_json(str({'stdout': stdout, 'stderr': stderr}))
         # Если выполнение завершено, то вывести код результата
         status = run_model.status()
         if not status['Running']:

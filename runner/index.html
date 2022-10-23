@@ -36,7 +36,7 @@ ws.onmessage = function(event) {
     //var content = document.createTextNode(event.data)
     //message.appendChild(content)
     //messages.appendChild(message)
-    messages.innerHTML += event.data
+    messages.innerHTML += event.data + '<br>'
 };
 function newProgramm(event) {
     document.getElementById("messages").innerHTML = ""
