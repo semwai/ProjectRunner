@@ -31,11 +31,16 @@ class Execution:
     def read(self):
         """read from (stdout, stderr)""" # only 1024!!
         try:
-            stderr = self.stderr._sock.recv(1024)
+            # Первым делом получаю заголовок 8 бит, первый бит всегда 0, далее идет число - размер сообщения
+            header = self.stderr._sock.recv(8)
+            size = int.from_bytes(header[1:8], 'big')
+            stderr = self.stderr._sock.recv(size)
         except BlockingIOError:
             stderr = None
         try:
-            stdout = self.stdout._sock.recv(1024)
+            header = self.stdout._sock.recv(8)
+            size = int.from_bytes(header[1:8], 'big')
+            stdout = self.stdout._sock.recv(size)
         except BlockingIOError:
             stdout = None
         return stdout, stderr
@@ -88,7 +93,7 @@ class Runner:
             command=command,
             working_dir='/app',
             volumes=[f'{self.volume.id}:/app'],
-            tty=True,
+            tty=False,
             detach=True,
             network_disabled=True,
             stdin_open=True,
@@ -97,5 +102,5 @@ class Runner:
     def __del__(self):
         """После завершени работы контейнера его нужно удалить"""
         self.container.remove(force=True)
-        self.volume.remove()
+        self.volume.remove(force=True)
         shutil.rmtree(self.folder.name, ignore_errors=True)

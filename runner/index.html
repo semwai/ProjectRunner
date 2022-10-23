@@ -25,7 +25,7 @@ while True:
         </div>
         <p>stdin:</p>
         <p><input type=text id="stdIOText"/><button onclick="newstdIO(event)">send</button></p>
-        <p>stdout:</p>
+        <p>process output:</p>
         <pre id='messages' style='font-family:Monospace;'>
         </pre>
         <script>
@@ -36,7 +36,19 @@ ws.onmessage = function(event) {
     //var content = document.createTextNode(event.data)
     //message.appendChild(content)
     //messages.appendChild(message)
-    messages.innerHTML += event.data + '<br>'
+    console.log(event.data)
+    msg = JSON.parse(event.data)
+    console.log(msg)
+    if (msg.stdout) {
+        messages.innerHTML += `<span>${msg.stdout}<span>`
+    }
+    if (msg.stderr) {
+        messages.innerHTML += `<span style="color:red;">${msg.stderr}<span>`
+    }
+    if (msg.exit) {
+        messages.innerHTML += `<span style="color:blue;">${msg.exit}<span>`
+    }
+    //messages.innerHTML += event.data + '<br>'
 };
 function newProgramm(event) {
     document.getElementById("messages").innerHTML = ""
@@ -47,6 +59,7 @@ function newProgramm(event) {
 }
 function newstdIO(event) {
     var input = document.getElementById("stdIOText")
+    messages.innerHTML += `<span style="color:green;">${input.value}<br><span>`
     ws.send(JSON.stringify({type: 'stdio', data: input.value}))
     //input.value = ''
     event.preventDefault()

@@ -69,12 +69,15 @@ async def websocket_endpoint(websocket: WebSocket):
             continue
         # Пытаюсь получить данные из контейнера
         if (ret := run_model.read()) != (None, None):
+            # decode byte to str if not empty
             stdout, stderr = ret
-            await websocket.send_json(str({'stdout': stdout, 'stderr': stderr}))
+            stdout = stdout if stdout is None else stdout.decode().replace('\n', '<br>')
+            stderr = stderr if stderr is None else stderr.decode().replace('\n', '<br>')
+            await websocket.send_json({'stdout': stdout, 'stderr': stderr})
         # Если выполнение завершено, то вывести код результата
         status = run_model.status()
         if not status['Running']:
-            await websocket.send_text(f"Process finished with exit code {status['ExitCode']}")
+            await websocket.send_json({'exit': f"Process finished with exit code {status['ExitCode']}"})
             run_model = None
 
 
