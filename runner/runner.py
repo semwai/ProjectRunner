@@ -49,14 +49,11 @@ class Execution:
         self.container.reload()
         return self.container.attrs['State']
 
-    def __del__(self):
-        self.container.remove(force=True)
-
 
 class Runner:
-    """Открытый контейнер, в рамках которого исполняется несколько команд"""
+    """Открытый проект, в рамках которого исполняется несколько команд"""
     def __init__(self):
-        """Запускаю контейнер и увожу его в вечный сон и ожидание команд"""
+        """Запускаю контейнер и увожу его в вечный сон (контейнер использую для загрузки файлов)"""
         self.volume = client.volumes.create()
         self.container = client.containers.run(
             'golang:alpine',
@@ -67,6 +64,8 @@ class Runner:
             detach=True,
             network_disabled=True,
         )
+        # Созданные контейнеры
+        self.containers = [self.container]
 
     @staticmethod
     def _make_archive(filename: str, data: bytes):
@@ -87,7 +86,7 @@ class Runner:
 
     def command(self, command):
         """Выполнить команду, аналог docker exec"""
-        return Execution(client.containers.create(
+        container = client.containers.create(
             'golang:alpine',
             command=command,
             working_dir='/app',
@@ -96,9 +95,12 @@ class Runner:
             detach=True,
             network_disabled=True,
             stdin_open=True,
-        ))
+        )
+        self.containers.append(container)
+        return Execution(container)
 
     def __del__(self):
         """После завершени работы контейнера его нужно удалить"""
-        self.container.remove(force=True)
+        for c in self.containers:
+            c.remove(force=True)
         self.volume.remove(force=True)
