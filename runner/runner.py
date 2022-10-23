@@ -28,7 +28,8 @@ class Execution:
 
     def read(self):
         """read from (stdout, stderr)"""
-        # Первым делом получаю заголовок 8 бит, первый бит всегда 0, далее идет число - размер сообщения
+        # Первым делом получаю заголовок 8 байт, первый байт всегда содержит 0x01
+        # В последних байтах записана длина сообщения
         header = self.stderr.read(8)
         if header is not None:
             size = int.from_bytes(header[1:8], 'big')
