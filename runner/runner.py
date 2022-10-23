@@ -1,10 +1,8 @@
-import tempfile
-import shutil
-from pathlib import Path
+import time
+
 import docker
 import tarfile
 import io
-import asyncio
 
 client = docker.from_env()
 
@@ -14,34 +12,35 @@ class Execution:
     def __init__(self, container):
         self.container = container
         self.container.start()
-        #self.reader = client.api.attach(container.id, stream=True, demux=True)
         self.stdin = client.api.attach_socket(container.id, params={'stdin': 1, 'stdout': 0, 'stderr': 0, 'stream': 1})
         self.stdout = client.api.attach_socket(container.id, params={'stdin': 0, 'stdout': 1, 'stderr': 0, 'stream': 1})
         self.stderr = client.api.attach_socket(container.id, params={'stdin': 0, 'stdout': 0, 'stderr': 1, 'stream': 1})
         # Сокет перестаёт блокировать при чтении, но если сокет пуст, то будет вылетать BlockingIOError
         self.stdin._sock.setblocking(0)
+        self.stdin._writing = True
         self.stdout._sock.setblocking(0)
         self.stderr._sock.setblocking(0)
         print()
 
     def write(self, data: str):
         """write data to stdin"""
-        return self.stdin._sock.send(data.encode('utf-8'))
+        return self.stdin.write(data.encode('utf-8'))
 
     def read(self):
-        """read from (stdout, stderr)""" # only 1024!!
-        try:
-            # Первым делом получаю заголовок 8 бит, первый бит всегда 0, далее идет число - размер сообщения
-            header = self.stderr._sock.recv(8)
+        """read from (stdout, stderr)"""
+        # Первым делом получаю заголовок 8 бит, первый бит всегда 0, далее идет число - размер сообщения
+        header = self.stderr.read(8)
+        if header is not None:
             size = int.from_bytes(header[1:8], 'big')
-            stderr = self.stderr._sock.recv(size)
-        except BlockingIOError:
+            stderr = self.stderr.read(size)
+        else:
             stderr = None
-        try:
-            header = self.stdout._sock.recv(8)
+
+        header = self.stdout.read(8)
+        if header is not None:
             size = int.from_bytes(header[1:8], 'big')
-            stdout = self.stdout._sock.recv(size)
-        except BlockingIOError:
+            stdout = self.stdout.read(size)
+        else:
             stdout = None
         return stdout, stderr
 
@@ -58,7 +57,6 @@ class Runner:
     """Открытый контейнер, в рамках которого исполняется несколько команд"""
     def __init__(self):
         """Запускаю контейнер и увожу его в вечный сон и ожидание команд"""
-        self.folder = tempfile.TemporaryDirectory()
         self.volume = client.volumes.create()
         self.container = client.containers.run(
             'golang:alpine',
@@ -70,7 +68,8 @@ class Runner:
             network_disabled=True,
         )
 
-    def _make_archive(self, filename: str, data: bytes):
+    @staticmethod
+    def _make_archive(filename: str, data: bytes):
         """Делаю архив с одним файлом из данных"""
         tarstream = io.BytesIO()
         tar = tarfile.open(fileobj=tarstream, mode='w')
@@ -103,4 +102,3 @@ class Runner:
         """После завершени работы контейнера его нужно удалить"""
         self.container.remove(force=True)
         self.volume.remove(force=True)
-        shutil.rmtree(self.folder.name, ignore_errors=True)
