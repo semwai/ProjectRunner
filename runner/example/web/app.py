@@ -4,6 +4,7 @@ from starlette.websockets import WebSocketDisconnect
 import asyncio
 import uvicorn
 
+from runner.container import Container
 from runner.controller import ProjectController
 
 app = FastAPI()
@@ -11,7 +12,7 @@ app = FastAPI()
 
 @app.get("/")
 async def get():
-    return HTMLResponse(open("index.html").read())
+    return HTMLResponse(open("example/web/index.html").read())
 
 
 @app.websocket("/ws")
@@ -35,7 +36,7 @@ async def websocket_endpoint(websocket: WebSocket):
         if data is not None:
             match data['type']:
                 case "programm":
-                    run_model = ProjectController(data['data'])
+                    run_model = ProjectController(data['data'], Container('golang:alpine'))
                 case "stdio":
                     if run_model is not None:
                         run_model.write(data['data'])
@@ -46,8 +47,8 @@ async def websocket_endpoint(websocket: WebSocket):
         if (ret := run_model.read()) != (None, None):
             # decode byte to str if not empty
             stdout, stderr = ret
-            stdout = stdout if stdout is None else stdout.decode().replace('\n', '<br>')
-            stderr = stderr if stderr is None else stderr.decode().replace('\n', '<br>')
+            stdout = stdout if stdout is None else stdout.replace('\n', '<br>')
+            stderr = stderr if stderr is None else stderr.replace('\n', '<br>')
             await websocket.send_json({'stdout': stdout, 'stderr': stderr})
         # Если выполнение завершено, то вывести код результата
         status = run_model.status()
