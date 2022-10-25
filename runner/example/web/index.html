@@ -35,7 +35,7 @@ func main() {
     fmt.Println("done")
 }
             </textarea>
-            <p><button onclick="newProgramm(event)">Run</button></p>
+            <p><button onclick="newProgram(event)">Run</button></p>
         </div>
         <p>stdin:</p>
         <p><input type=text id="stdIOText"/><button onclick="newstdIO(event)">send</button></p>
@@ -64,10 +64,10 @@ ws.onmessage = function(event) {
     }
     //messages.innerHTML += event.data + '<br>'
 };
-function newProgramm(event) {
+function newProgram(event) {
     document.getElementById("messages").innerHTML = ""
     var input = document.getElementById("messageText")
-    ws.send(JSON.stringify({type: 'programm', data: input.value}))
+    ws.send(JSON.stringify({type: 'program', data: input.value}))
     //input.value = ''
     event.preventDefault()
 }

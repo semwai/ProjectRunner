@@ -28,14 +28,14 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await asyncio.wait_for(fut=websocket.receive_json(), timeout=0.1)
         except asyncio.exceptions.TimeoutError:
             data = None
-        # Клиент может отлючиться
+        # Клиент может отключиться
         except WebSocketDisconnect:
             print("client disconnect")
             break
         # Если придет сообщение от клиента, то проверяю его
         if data is not None:
             match data['type']:
-                case "programm":
+                case "program":
                     run_model = ProjectController(data['data'], Container('golang:alpine'))
                 case "stdio":
                     if run_model is not None:

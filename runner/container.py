@@ -1,5 +1,3 @@
-import time
-
 import docker
 import tarfile
 import io
@@ -15,12 +13,12 @@ class Command:
         self.stdin = client.api.attach_socket(container.id, params={'stdin': 1, 'stdout': 0, 'stderr': 0, 'stream': 1})
         self.stdout = client.api.attach_socket(container.id, params={'stdin': 0, 'stdout': 1, 'stderr': 0, 'stream': 1})
         self.stderr = client.api.attach_socket(container.id, params={'stdin': 0, 'stdout': 0, 'stderr': 1, 'stream': 1})
-        # Сокет перестаёт блокировать при чтении, если сокет пуст, то вместо байт выдается None
-        self.stdin._sock.setblocking(0)
+        # Сокет перестаёт блокировать при чтении, если сокет пуст, то вместо байта будет None
+        self.stdin._sock.setblocking(0) # noqa
         # Разрешаю запись в сокет
-        self.stdin._writing = True
-        self.stdout._sock.setblocking(0)
-        self.stderr._sock.setblocking(0)
+        self.stdin._writing = True # noqa
+        self.stdout._sock.setblocking(0) # noqa
+        self.stderr._sock.setblocking(0) # noqa
 
     def write(self, data: str):
         """write data to stdin"""
@@ -46,7 +44,7 @@ class Command:
         return stdout, stderr
 
     def status(self):
-        """Позвлоляет узнать завершила ли работу команда и узнать код возврата"""
+        """Позволяет узнать завершила ли работу команда и узнать код возврата"""
         self.container.reload()
         return self.container.attrs['State']
 
@@ -102,7 +100,7 @@ class Container:
         return Command(container)
 
     def __del__(self):
-        """После завершени работы контейнера его нужно удалить"""
+        """После завершения работы контейнера его нужно удалить"""
         for c in self.containers:
             c.remove(force=True)
         self.volume.remove(force=True)

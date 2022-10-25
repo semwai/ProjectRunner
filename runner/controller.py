@@ -5,7 +5,7 @@ class ProjectController:
     """Контроллер запущенного проекта"""
     def __init__(self, code, container: Container):
         self.container = container
-        self.container.add_file('app.go', code) # must be step
+        self.container.add_file('app.go', code)  # must be step
         self.container.add_file('test.txt', '1234')
         self.exec = self.container.command('go run app.go')
         # print(self.exec.status())
