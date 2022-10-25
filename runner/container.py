@@ -1,6 +1,7 @@
 import docker
 import tarfile
 import io
+from uuid import uuid4 as uuid
 
 client = docker.from_env()
 
@@ -54,7 +55,8 @@ class Container:
     def __init__(self, image: str):
         """Запускаю контейнер и увожу его в вечный сон (контейнер использую для загрузки файлов)"""
         self.image = image
-        self.volume = client.volumes.create()
+        unique_id = uuid()
+        self.volume = client.volumes.create(name=f"volume_{unique_id}")
         self.container = client.containers.run(
             self.image,
             command='sleep infinity',
@@ -63,6 +65,7 @@ class Container:
             tty=False,
             detach=True,
             network_disabled=True,
+            name=f"container_{unique_id}"
         )
         # Созданные контейнеры
         self.containers = [self.container]
@@ -95,6 +98,7 @@ class Container:
             detach=True,
             network_disabled=True,
             stdin_open=True,
+            name=f"command_{uuid()}"
         )
         self.containers.append(container)
         return Command(container)
