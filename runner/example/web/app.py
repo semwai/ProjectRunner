@@ -1,6 +1,6 @@
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import HTMLResponse
-from starlette.websockets import WebSocketDisconnect
+from starlette.websockets import WebSocketDisconnect # noqa
 import asyncio
 import uvicorn
 
