@@ -7,7 +7,7 @@ import io
 client = docker.from_env()
 
 
-class Execution:
+class Command:
     """Одна команда, которая имеет сокет для ввода и вывода"""
     def __init__(self, container):
         self.container = container
@@ -51,7 +51,7 @@ class Execution:
         return self.container.attrs['State']
 
 
-class Runner:
+class Container:
     """Открытый проект, в рамках которого исполняется несколько команд"""
     def __init__(self):
         """Запускаю контейнер и увожу его в вечный сон (контейнер использую для загрузки файлов)"""
@@ -98,7 +98,7 @@ class Runner:
             stdin_open=True,
         )
         self.containers.append(container)
-        return Execution(container)
+        return Command(container)
 
     def __del__(self):
         """После завершени работы контейнера его нужно удалить"""

@@ -4,7 +4,7 @@ from starlette.websockets import WebSocketDisconnect
 import asyncio
 import uvicorn
 
-from runner import Runner
+from container import Container
 
 app = FastAPI()
 
@@ -17,7 +17,7 @@ async def get():
 class RunModel:
     """Контроллер запущенной команды"""
     def __init__(self, text):
-        self.runner = Runner()
+        self.runner = Container()
         self.runner.add_file('app.go', text)
         self.runner.add_file('test.txt', '1234')
         self.exec = self.runner.command('go run app.go')

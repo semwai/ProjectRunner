@@ -1,6 +1,6 @@
 import time
 
-from runner import Runner
+from container import Container
 import asyncio
 
 code = """
@@ -33,7 +33,7 @@ async def write_pool(exec):
 
 
 async def main():
-    r = Runner()
+    r = Container()
     r.add_file('app.py', code)
     # Выполняем команду и получаем сокет для ввода-вывода
     exec = r.exec('python app.py')
