@@ -36,7 +36,7 @@ async def main():
     r = Container()
     r.add_file('app.py', code)
     # Выполняем команду и получаем сокет для ввода-вывода
-    exec = r.exec('python app.py')
+    exec = r.command('python app.py')
     print(exec.status())
     await asyncio.gather(
         write_pool(exec), read_pool(exec)

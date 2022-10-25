@@ -4,7 +4,7 @@ from starlette.websockets import WebSocketDisconnect
 import asyncio
 import uvicorn
 
-from container import Container
+from runner.controller import ProjectController
 
 app = FastAPI()
 
@@ -12,31 +12,6 @@ app = FastAPI()
 @app.get("/")
 async def get():
     return HTMLResponse(open("index.html").read())
-
-
-class RunModel:
-    """Контроллер запущенной команды"""
-    def __init__(self, text):
-        self.runner = Container()
-        self.runner.add_file('app.go', text)
-        self.runner.add_file('test.txt', '1234')
-        self.exec = self.runner.command('go run app.go')
-        # print(self.exec.status())
-
-    def write(self, data):
-        if self.exec.status()['Running']:
-            return self.exec.write(data + "\n")
-        else:
-            return self.exec.status()['ExitCode']
-
-    def read(self):
-        try:
-            return self.exec.read()
-        except TimeoutError:
-            return None
-
-    def status(self):
-        return self.exec.status()
 
 
 @app.websocket("/ws")
@@ -60,7 +35,7 @@ async def websocket_endpoint(websocket: WebSocket):
         if data is not None:
             match data['type']:
                 case "programm":
-                    run_model = RunModel(data['data'])
+                    run_model = ProjectController(data['data'])
                 case "stdio":
                     if run_model is not None:
                         run_model.write(data['data'])
