@@ -33,14 +33,14 @@ class Command:
         header = self.stderr.read(8)
         if header is not None:
             size = int.from_bytes(header[1:8], 'big')
-            stderr = self.stderr.read(size)
+            stderr = self.stderr.read(size).decode()
         else:
             stderr = None
 
         header = self.stdout.read(8)
         if header is not None:
             size = int.from_bytes(header[1:8], 'big')
-            stdout = self.stdout.read(size)
+            stdout = self.stdout.read(size).decode()
         else:
             stdout = None
         return stdout, stderr
@@ -53,11 +53,12 @@ class Command:
 
 class Container:
     """Открытый проект, в рамках которого исполняется несколько команд"""
-    def __init__(self):
+    def __init__(self, image: str):
         """Запускаю контейнер и увожу его в вечный сон (контейнер использую для загрузки файлов)"""
+        self.image = image
         self.volume = client.volumes.create()
         self.container = client.containers.run(
-            'golang:alpine',
+            self.image,
             command='sleep infinity',
             working_dir='/app',
             volumes=[f'{self.volume.id}:/app'],
@@ -88,7 +89,7 @@ class Container:
     def command(self, command):
         """Выполнить команду, аналог docker exec"""
         container = client.containers.create(
-            'golang:alpine',
+            self.image,
             command=command,
             working_dir='/app',
             volumes=[f'{self.volume.id}:/app'],
