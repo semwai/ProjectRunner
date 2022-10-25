@@ -1,34 +1,13 @@
 from runner.container import Container
-from abc import ABC
-from dataclasses import dataclass
-
-
-@dataclass
-class Step(ABC):
-    """Абстрактная команда"""
-    pass
-
-
-@dataclass
-class AddFile(Step):
-    """Добавление файла"""
-    name: str
-    data: str | bytes
-
-
-@dataclass
-class RunCommand(Step):
-    """Запуск консольной команды внутри контейнера"""
-    command: str
-    # читать из stdout/stderr
-    read: bool
-    # писать в stdin
-    write: bool
+from runner.controller import Controller
+from runner.step import AddFile, RunCommand
 
 
 class Project:
-    """Проект руководит командами и обеспечивает их правильное выполнение"""
-    def __init__(self, container: Container, *steps):
+    """Проект принимает последовательность команд, которые выполняет согласно сценарию. Данные получаются и
+    отправляются на контроллер """
+    def __init__(self, controller: Controller, container: Container, *steps):
+        self.controller = controller
         self.steps = steps
         self.container = container
 
@@ -38,7 +17,8 @@ if __name__ == '__main__':
     print(123 + 321)
     """
     p = Project(
+        Controller(),
         Container('python:3.10-alpine'),
-        AddFile('app.py', text),
+        AddFile('app.py', text),  # Вместо text будет описание источника ввода файла
         RunCommand('python app.py', read=True, write=True)
     )

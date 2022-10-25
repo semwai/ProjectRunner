@@ -1,4 +1,10 @@
+from abc import ABC
 from runner.container import Container
+
+
+class Controller(ABC):
+    """У контроллера проект получает файлы и данные для ввода. Контроллеру проект отдает данные и коды состояний"""
+    pass
 
 
 class ProjectController:
@@ -8,7 +14,6 @@ class ProjectController:
         self.container.add_file('app.go', code)  # must be step
         self.container.add_file('test.txt', '1234')
         self.exec = self.container.command('go run app.go')
-        # print(self.exec.status())
 
     def write(self, data):
         if self.exec.status()['Running']:
