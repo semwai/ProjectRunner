@@ -49,6 +49,11 @@ class Command:
         self.container.reload()
         return self.container.attrs['State']
 
+    def __del__(self):
+        self.stdin.close()
+        self.stderr.close()
+        self.stdout.close()
+
 
 class Container:
     """Открытый проект, в рамках которого исполняется несколько команд"""
