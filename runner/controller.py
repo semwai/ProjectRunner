@@ -1,12 +1,28 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from runner.container import Container
 
 
 class Controller(ABC):
     """У контроллера проект получает файлы и данные для ввода. Контроллеру проект отдает данные и коды состояний"""
-    pass
+    @abstractmethod
+    def read(self):
+        pass
+
+    @abstractmethod
+    def write(self, data):
+        pass
 
 
+class ConsoleController(Controller):
+    """Чтение и запись из консоли"""
+    def read(self):
+        return input() + '\n'
+
+    def write(self, data):
+        print(data)
+
+
+# old, remove
 class ProjectController:
     """Контроллер запущенного проекта"""
     def __init__(self, code, container: Container):
