@@ -2,6 +2,7 @@ import docker
 import tarfile
 import io
 from uuid import uuid4 as uuid
+from typing import Literal
 
 client = docker.from_env()
 
@@ -21,11 +22,11 @@ class Command:
         self.stdout._sock.setblocking(0) # noqa
         self.stderr._sock.setblocking(0) # noqa
 
-    def write(self, data: str):
+    def write(self, data: str) -> int:
         """write data to stdin"""
         return self.stdin.write(data.encode('utf-8'))
 
-    def read(self):
+    def read(self) -> tuple[str | None, str | None]:
         """read from (stdout, stderr)"""
         # Первым делом получаю заголовок 8 байт, первый байт всегда содержит 0x01
         # В последних байтах записана длина сообщения
@@ -44,7 +45,8 @@ class Command:
             stdout = None
         return stdout, stderr
 
-    def status(self):
+    def status(self) -> dict[Literal["Status", "Running", "Paused", "Restarting",
+                                     "OOMKilled", "Dead", "Pid", "ExitCode", "Error", "StartedAt", "FinishedAt"]]:
         """Позволяет узнать завершила ли работу команда и узнать код возврата"""
         self.container.reload()
         return self.container.attrs['State']
@@ -87,12 +89,12 @@ class Container:
         tarstream.seek(0)
         return tarstream
 
-    def add_file(self, filename: str, data: str):
+    def add_file(self, filename: str, data: str) -> None:
         """Загрузка файла в контейнер"""
         tarstream = self._make_archive(filename, data.encode('utf-8'))
         client.api.put_archive(self.container.id, '/app', tarstream)
 
-    def command(self, command):
+    def command(self, command) -> Command:
         """Выполнить команду, аналог docker exec"""
         container = client.containers.create(
             self.image,
