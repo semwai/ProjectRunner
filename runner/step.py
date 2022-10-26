@@ -19,7 +19,7 @@ class AddFile(Step):
 class RunCommand(Step):
     """Запуск консольной команды внутри контейнера"""
     command: str
-    # читать из stdout/stderr
+    # читать из stdout/stderr запущенной команды
     read: bool
     # писать в stdin
     write: bool
