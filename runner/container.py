@@ -11,7 +11,6 @@ class Command:
     """Одна команда, которая имеет сокет для ввода и вывода"""
     def __init__(self, container):
         self.container = container
-        self.container.start()
         self.stdin = client.api.attach_socket(container.id, params={'stdin': 1, 'stdout': 0, 'stderr': 0, 'stream': 1})
         self.stdout = client.api.attach_socket(container.id, params={'stdin': 0, 'stdout': 1, 'stderr': 0, 'stream': 1})
         self.stderr = client.api.attach_socket(container.id, params={'stdin': 0, 'stdout': 0, 'stderr': 1, 'stream': 1})
@@ -21,6 +20,7 @@ class Command:
         self.stdin._writing = True # noqa
         self.stdout._sock.setblocking(0) # noqa
         self.stderr._sock.setblocking(0) # noqa
+        self.container.start()
 
     def write(self, data: str) -> int:
         """write data to stdin"""
