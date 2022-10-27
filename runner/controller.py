@@ -19,7 +19,11 @@ class ConsoleController(Controller):
         return input() + '\n'
 
     def write(self, data):
-        print(data)
+        stdout, stderr = data
+        if stdout:
+            print(stdout, end='')
+        if stderr:
+            print(stderr, end='')
 
 
 # old, remove
