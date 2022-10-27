@@ -1,6 +1,7 @@
 import docker
 import tarfile
 import io
+import time
 from uuid import uuid4 as uuid
 from typing import Literal
 
@@ -84,6 +85,7 @@ class Container:
         tar = tarfile.open(fileobj=tarstream, mode='w')
         tarinfo = tarfile.TarInfo(name=filename)
         tarinfo.size = len(data)
+        tarinfo.mtime = int(time.time())
         tar.addfile(tarinfo=tarinfo, fileobj=io.BytesIO(data))
         tar.close()
         tarstream.seek(0)
