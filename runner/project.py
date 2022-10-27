@@ -1,7 +1,6 @@
 from runner.container import Container
 from runner.controller import Controller, ConsoleController
 from runner.step import AddFile, RunCommand
-import time
 
 
 class Project:
@@ -24,18 +23,26 @@ class Project:
                 self.last_status = None
             case RunCommand(command, read, write):
                 c = self.container.command(command)
-                print(inst, c.status())
                 while c.status()['Running']:
-                    time.sleep(0.5)
                     if write:
-                        self.controller.write(c.read())
-                    if read:
+                        data = c.read()
+                        if data != (None, None):
+                            self.controller.write(data)
+                    if read and c.status()['Running']:
                         c.write(self.controller.read())
+                # чтение оставшихся данных
                 if write:
-                    time.sleep(0.5)
-                    self.controller.write(c.read())
+                    while True:
+                        read = c.read()
+                        if read == ('', ''):
+                            break
+                        self.controller.write(read)
                 self.last_status = c.status()['ExitCode']
         self.current += 1
+
+    def run(self):
+        while self.current < len(self.steps):
+            self.step()
 
     def __del__(self):
         del self.container
@@ -43,19 +50,26 @@ class Project:
 
 def main():
     text = """
-print(123 + 321)
-print(input('str:')*10)
+package main
+
+import "fmt"
+
+func main() {
+    var text string
+    fmt.Println("enter value:")
+    fmt.Scan(&text)
+    fmt.Println("user input =", text)
+}
         """
     p = Project(
         ConsoleController(),
-        Container('python:3.10-alpine'),
-        AddFile('app.py', text),  # Вместо text будет описание источника ввода файла
-        # RunCommand('python app.py', read=True, write=True),
-        RunCommand('ls', read=True, write=True)
+        Container('golang:alpine'),
+        AddFile('main.go', text),  # Вместо text будет описание источника ввода файла
+        RunCommand('go build main.go', read=False, write=False),
+        RunCommand('ls -la', read=False, write=True),
+        RunCommand('./main', read=True, write=True)
     )
-    p.step()
-    p.step()
-    # p.step()
+    p.run()
     del p
 
 
