@@ -4,17 +4,15 @@ document = """
 version: 1 # Версия описания документа
 
 project:
-    name: wotlin language 1.15 # Отображаемое имя проекта
+    name: gcc 5.15 # Отображаемое имя проекта
     version: 2 # Версия проекта
-    description: wotlin language compiler # Краткая информация
-    full-description: wotlin language compiler v1.15 # Подробная информация
+    description: gcc language compiler # Краткая информация
+    full-description: gcc language compiler v5.15 # Подробная информация
     url: 
-      github: github.com/wotlin/wotlin
+      github: github.com/gcc/gcc
       telegram: tg.me/...
     authors: [John, Alex, Dog]
     
-    start:
-        command: ./wotlin -a 123 -i # часть параметров передаются при любом запуске
     input:
         params:
             - optimization:
@@ -23,23 +21,29 @@ project:
                 type: list # выбор одного из множества параметров
                 values:
                     - O0: zero optimization
-                    - 01: light optimization
-                    - 02: standard optimization
+                    - O1: light optimization
+                    - O2: standard optimization
             - code: # окно ввода кода
                 name: code redactor
                 type: redactor
                 lang: wotlin
                 width: 80
                 file: 
-                    name: main.wt
+                    name: main.c
     
-    output: # как обрабатывает выход компилятора 
-        - run kotlinc $ # $ - вставляет все параметры
-        - if code == 0: # если ошибок не было, то вывести результа работы компилятора
-            - print stdout
-        - else: 
-            - print code
-            - print stderr
+    output: > # как обрабатывает выход компилятора 
+        run (gcc $) # $ - вставляет все параметры
+        if code == 0: # если ошибок не было, то вывести результата работы компилятора
+            print(stdout)
+            run(./a.out)
+            if code == 0:
+                print(stdout)
+            else:
+                print(code)
+                print(stderr)
+        else: 
+            print(code)
+            print(stderr)
 """
 
 if __name__ == '__main__':
