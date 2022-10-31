@@ -1,5 +1,7 @@
+import time
+
 from runner.container import Container
-from runner.controller import Controller, ConsoleController
+from runner.controller import Controller, ConsoleController, ThreadConsoleController
 from runner.step import AddFile, RunCommand
 
 
@@ -24,12 +26,17 @@ class Project:
             case RunCommand(command, read, write):
                 c = self.container.command(command)
                 while c.status()['Running']:
+                    # небольшая задержка чтобы проект не спрашивал постоянно у контейнера и пользователя данные
+                    time.sleep(0.1)
                     if write:
                         data = c.read()
                         if data != (None, None):
                             self.controller.write(data)
-                    if read and c.status()['Running'] and (data := self.controller.read()) is not None:
-                        c.write(data)
+                    if read and c.status()['Running']:
+                        data = self.controller.read()
+                        if data is not None:
+                            # print(f"project load {data}")
+                            c.write(data)
                 # чтение оставшихся данных
                 if write:
                     while True:
@@ -51,26 +58,41 @@ class Project:
 def main():
     text = """
 package main
-
-import "fmt"
-
+import (
+    "fmt"
+    "time"
+)
+func f(from string) {
+    for i := 0; i < 3; i++ {
+        fmt.Println(from, ":", i)
+        time.Sleep(time.Second)
+    }
+}
 func main() {
     var text string
     fmt.Println("enter value:")
     fmt.Scan(&text)
-    fmt.Println("user input =", text)
+    f(text)
+    go f("goroutine1")
+    go f("goroutine2")
+    time.Sleep(time.Second * 4)
+    fmt.Println("done")
 }
         """
-    p = Project(
-        ConsoleController(),
+    controller = ThreadConsoleController()
+    project = Project(
+        controller,
         Container('golang:alpine'),
         AddFile('main.go', text),  # Вместо text будет описание источника ввода файла
-        RunCommand('go build main.go', read=False, write=False),
-        RunCommand('ls -la', read=False, write=True),
-        RunCommand('./main', read=True, write=True)
+        RunCommand('go build main.go', stdin=False, stdout=True),
+        RunCommand('ls -la', stdin=False, stdout=True),
+        RunCommand('./main', stdin=True, stdout=True)
     )
-    p.run()
-    del p
+    controller.run()
+    project.run()
+    controller.stop()
+    del controller
+    del project
 
 
 if __name__ == '__main__':
