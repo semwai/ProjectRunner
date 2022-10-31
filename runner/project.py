@@ -13,16 +13,18 @@ class Project:
         self.steps = steps
         self.current = 0
         self.container = container
-        self.last_status = None  # код возврата из последней запущенной команды
+        self.last_ExitCode = None  # код возврата из последней запущенной команды
 
     def step(self):
         if self.current == len(self.steps):
             raise IndexError
+        if self.last_ExitCode is not None and self.last_ExitCode != 0:
+            raise Exception(f"ExitCode {self.last_ExitCode}")
         inst = self.steps[self.current]
         match inst:
             case AddFile(name, data):
                 self.container.add_file(name, data)
-                self.last_status = None
+                self.last_ExitCode = None
             case RunCommand(command, read, write):
                 c = self.container.command(command)
                 while c.status()['Running']:
@@ -35,7 +37,6 @@ class Project:
                     if read and c.status()['Running']:
                         data = self.controller.read()
                         if data is not None:
-                            # print(f"project load {data}")
                             c.write(data)
                 # чтение оставшихся данных
                 if write:
@@ -44,8 +45,8 @@ class Project:
                         if read == ('', ''):
                             break
                         self.controller.write({'stdout': read[0], 'stderr': read[1]})
-                self.last_status = c.status()['ExitCode']
-                self.controller.write({'ExitCode': f"Process exit with status code {self.last_status}\n"})
+                self.last_ExitCode = c.status()['ExitCode']
+                self.controller.write({'ExitCode': f"Process finished with exit code {self.last_ExitCode}\n"})
         self.current += 1
 
     def run(self):
@@ -64,7 +65,7 @@ import (
     "time"
 )
 func f(from string) {
-    for i := 0; i < 3; i++ {
+    for i := 0; i < 2; i++ {
         fmt.Println(from, ":", i)
         time.Sleep(time.Second)
     }
@@ -76,7 +77,7 @@ func main() {
     f(text)
     go f("goroutine1")
     go f("goroutine2")
-    time.Sleep(time.Second * 4)
+    time.Sleep(time.Second * 3)
     fmt.Println("done")
 }
         """
@@ -90,7 +91,10 @@ func main() {
         RunCommand('./main', stdin=True, stdout=True)
     )
     controller.run()
-    project.run()
+    try:
+        project.run()
+    except Exception as e:
+        print(e)
     controller.stop()
     del controller
     del project
