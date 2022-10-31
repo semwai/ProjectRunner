@@ -3,14 +3,14 @@
 sequenceDiagram
     participant Browser
     participant Server
-    participant Container_Manager
+    participant Project_Controller
     participant Container
     
     Browser-)Server: run project
-    Server-)Container_Manager: init volume
+    Server-)Project_Controller: init volume
     
     loop project lifetime
-        Container_Manager-)Container: create container (one command)
+        Project_Controller-)Container: create container (one command)
         
         loop one command lifetime
             Container-)Server: stdout, stderr
