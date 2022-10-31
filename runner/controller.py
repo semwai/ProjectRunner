@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from runner.container import Container
 from threading import Thread, Lock
 from queue import Queue
+import select
+import sys
 
 
 class Controller(ABC):
@@ -43,7 +45,6 @@ class ThreadConsoleController(Controller):
             return None
         else:
             data = self.q.get_nowait()
-            # print(f"get from queue {data}")
             return data
 
     def write(self, data):
@@ -53,15 +54,28 @@ class ThreadConsoleController(Controller):
         if stderr:
             print(stderr, end='')
 
+    @staticmethod
+    def input_with_timeout(timeout) -> str | None:
+        """Чтение в течении timeout секунд, иначе возвращает None
+        https://stackoverflow.com/a/15533404/17676574
+        """
+        ready, _, _ = select.select([sys.stdin], [], [], timeout)
+        if ready:
+            return sys.stdin.readline().rstrip('\n')  # expect stdin to be line-buffered
+        else:
+            return None
+
     def _console_reader(self):
         while True:
             # чтение из консоли пока объект существует
             with self._lock:
                 if self._stop:
                     break
-            data = input() + '\n'
-            # print(f":{data}")
-            self.q.put(data)
+            # если использовать обычный input, то в случае закрытия приложения останется незавершенным поток,
+            # ждущий input()
+            data = self.input_with_timeout(1)
+            if data is not None:
+                self.q.put(data + '\n')
 
     def run(self) -> None:
         self.q = Queue()
