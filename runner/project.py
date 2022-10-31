@@ -28,8 +28,8 @@ class Project:
                         data = c.read()
                         if data != (None, None):
                             self.controller.write(data)
-                    if read and c.status()['Running']:
-                        c.write(self.controller.read())
+                    if read and c.status()['Running'] and (data := self.controller.read()) is not None:
+                        c.write(data)
                 # чтение оставшихся данных
                 if write:
                     while True:

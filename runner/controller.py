@@ -5,7 +5,7 @@ from runner.container import Container
 class Controller(ABC):
     """У контроллера проект получает файлы и данные для ввода. Контроллеру проект отдает данные и коды состояний"""
     @abstractmethod
-    def read(self):
+    def read(self) -> str | None:
         pass
 
     @abstractmethod
@@ -15,7 +15,7 @@ class Controller(ABC):
 
 class ConsoleController(Controller):
     """Чтение и запись из консоли"""
-    def read(self):
+    def read(self) -> str | None:
         return input() + '\n'
 
     def write(self, data):
