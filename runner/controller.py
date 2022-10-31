@@ -1,9 +1,12 @@
 from abc import ABC, abstractmethod
+from typing import Literal
 from runner.container import Container
 from threading import Thread, Lock
 from queue import Queue
 import select
 import sys
+
+from runner.utils import colored
 
 
 class Controller(ABC):
@@ -13,7 +16,7 @@ class Controller(ABC):
         pass
 
     @abstractmethod
-    def write(self, data):
+    def write(self, data: dict[Literal["stdout", "stderr", "ExitCode"]]):
         pass
 
 
@@ -22,12 +25,13 @@ class ConsoleController(Controller):
     def read(self) -> str | None:
         return input() + '\n'
 
-    def write(self, data):
-        stdout, stderr = data
-        if stdout:
+    def write(self, data: dict[Literal["stdout", "stderr", "ExitCode"]]):
+        if (stdout := data.get('stdout')) is not None:
             print(stdout, end='')
-        if stderr:
+        if (stderr := data.get('stderr')) is not None:
             print(stderr, end='')
+        if (ExitCode := data.get('ExitCode')) is not None:
+            print(ExitCode, end='')
 
 
 class ThreadConsoleController(Controller):
@@ -47,12 +51,13 @@ class ThreadConsoleController(Controller):
             data = self.q.get_nowait()
             return data
 
-    def write(self, data):
-        stdout, stderr = data
-        if stdout:
+    def write(self, data: dict[Literal["stdout", "stderr", "ExitCode"]]):
+        if (stdout := data.get('stdout')) is not None:
             print(stdout, end='')
-        if stderr:
-            print(stderr, end='')
+        if (stderr := data.get('stderr')) is not None:
+            print(colored(stderr, "FAIL"), end='')
+        if (ExitCode := data.get('ExitCode')) is not None:
+            print(colored(ExitCode, "OKBLUE"), end='')
 
     @staticmethod
     def input_with_timeout(timeout) -> str | None:

@@ -1,7 +1,7 @@
 import time
 
 from runner.container import Container
-from runner.controller import Controller, ConsoleController, ThreadConsoleController
+from runner.controller import Controller, ThreadConsoleController
 from runner.step import AddFile, RunCommand
 
 
@@ -31,7 +31,7 @@ class Project:
                     if write:
                         data = c.read()
                         if data != (None, None):
-                            self.controller.write(data)
+                            self.controller.write({'stdout': data[0], 'stderr': data[1]})
                     if read and c.status()['Running']:
                         data = self.controller.read()
                         if data is not None:
@@ -43,8 +43,9 @@ class Project:
                         read = c.read()
                         if read == ('', ''):
                             break
-                        self.controller.write(read)
+                        self.controller.write({'stdout': read[0], 'stderr': read[1]})
                 self.last_status = c.status()['ExitCode']
+                self.controller.write({'ExitCode': f"Process exit with status code {self.last_status}\n"})
         self.current += 1
 
     def run(self):
