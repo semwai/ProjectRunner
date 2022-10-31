@@ -12,7 +12,7 @@ app = FastAPI()
 
 @app.get("/")
 async def get():
-    return HTMLResponse(open("example/web/index.html").read())
+    return HTMLResponse(open("example/web_container/index.html").read())
 
 
 @app.websocket("/ws")
