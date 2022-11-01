@@ -10,13 +10,13 @@ function start(event) {
         msg = JSON.parse(event.data)
         console.log(msg)
         if (msg.stdout) {
-            messages.innerHTML += `<span>${msg.stdout}<span>`
+            messages.innerHTML += `<span>${msg.stdout}</span>`
         }
         if (msg.stderr) {
-            messages.innerHTML += `<span style="color:red;">${msg.stderr}<span>`
+            messages.innerHTML += `<span style="color:red;">${msg.stderr}</span>`
         }
         if (msg.ExitCode) {
-            messages.innerHTML += `<span style="color:blue;">${msg.ExitCode}<span>`
+            messages.innerHTML += `<span style="color:white;">${msg.ExitCode}</span>`
         }
     };
 }
@@ -41,3 +41,31 @@ function newstdIO(event) {
     ws.send(JSON.stringify({type: 'stdio', data: input.value}))
     event.preventDefault()
 }
+
+document.getElementById("messageText").value = `package main
+
+import (
+    "fmt"
+    "time"
+)
+
+func f(from string) {
+    for i := 0; i < 3; i++ {
+        fmt.Println(from, ":", i)
+        time.Sleep(time.Second)
+    }
+}
+
+func main() {
+
+    var text string
+    fmt.Print("enter value:")
+    fmt.Scan(&text)
+    f(text)
+
+    go f("goroutine1")
+    go f("goroutine2")
+
+    time.Sleep(time.Second * 4)
+    fmt.Println("done")
+}`

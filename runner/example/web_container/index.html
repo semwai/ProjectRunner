@@ -54,13 +54,13 @@ ws.onmessage = function(event) {
     msg = JSON.parse(event.data)
     console.log(msg)
     if (msg.stdout) {
-        messages.innerHTML += `<span>${msg.stdout}<span>`
+        messages.innerHTML += `<span>${msg.stdout}<span/>`
     }
     if (msg.stderr) {
-        messages.innerHTML += `<span style="color:red;">${msg.stderr}<span>`
+        messages.innerHTML += `<span style="color:red;">${msg.stderr}<span/>`
     }
     if (msg.exit) {
-        messages.innerHTML += `<span style="color:blue;">${msg.exit}<span>`
+        messages.innerHTML += `<span style="color:blue;">${msg.exit}<span/>`
     }
     //messages.innerHTML += event.data + '<br>'
 };
