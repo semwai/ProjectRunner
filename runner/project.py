@@ -14,11 +14,14 @@ class Project:
         self.current = 0
         self.container = container
         self.last_ExitCode = None  # код возврата из последней запущенной команды
+        self.stop = False  # завершен ли проект
 
     def step(self):
         if self.current == len(self.steps):
-            raise IndexError
+            self.stop = True
+            return
         if self.last_ExitCode is not None and self.last_ExitCode != 0:
+            self.stop = True
             raise Exception(f"ExitCode {self.last_ExitCode}")
         inst = self.steps[self.current]
         match inst:
@@ -29,7 +32,7 @@ class Project:
                 c = self.container.command(command)
                 while c.status()['Running']:
                     # небольшая задержка чтобы проект не спрашивал постоянно у контейнера и пользователя данные
-                    time.sleep(0.1)
+                    time.sleep(0.5)
                     if write:
                         data = c.read()
                         if data != (None, None):
@@ -72,7 +75,7 @@ func f(from string) {
 }
 func main() {
     var text string
-    fmt.Println("enter value:")
+    fmt.Print("enter value:")
     fmt.Scan(&text)
     f(text)
     go f("goroutine1")
