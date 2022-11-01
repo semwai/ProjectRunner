@@ -18,6 +18,7 @@ function start(event) {
         if (msg.ExitCode) {
             messages.innerHTML += `<span style="color:white;">${msg.ExitCode}</span>`
         }
+        messages.scrollTop += 1000
     };
 }
 

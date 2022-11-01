@@ -18,7 +18,28 @@ button[disabled]{
 #messages {
     background-color: #2b2b2b;
     width: 80ch;
-    height: 35ch;
+    height: 30ch;
     overflow: scroll;
     scroll-snap-align: end;
+    font-family: Monospace;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    align-items: center;
+}
+
+.logo {
+    font-size: 50px;
+    margin: 0px;
+    font-family: Arial;
+}
+
+#messageText {
+    overflow-y: scroll;
+    font-family: Monospace;
+    width: 80ch;
+    height: 50ch;
 }
