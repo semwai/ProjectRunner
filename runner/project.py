@@ -17,10 +17,6 @@ class Project:
         self._kill = False  # завершен ли проект с внешней стороны (пользователь закрыл вкладку браузера)
 
     def step(self):
-        if self.current == len(self.steps):
-            self.stop = True
-            self.current += 1
-            return
         if self.last_ExitCode is not None and self.last_ExitCode != 0:
             self.stop = True
             return
@@ -58,6 +54,9 @@ class Project:
                 else:
                     self.last_ExitCode = None
         self.current += 1
+        if self.current == len(self.steps):
+            self.stop = True
+            return
 
     def run(self):
         while self.current < len(self.steps) and not self._kill:
