@@ -46,10 +46,12 @@ async def websocket_endpoint(websocket: WebSocket):
     project = Project(
         controller,
         Container('golang:alpine'),
-        AddFile('main.go', code),  # Вместо text будет описание источника ввода файла
-        RunCommand('go build main.go', stdin=False, stdout=True),
-        RunCommand('ls -la', stdin=False, stdout=True),
-        RunCommand('./main', stdin=True, stdout=True)
+        AddFile('main.go', code),
+        RunCommand('echo "Hello user, v0.2.0"', stdin=False, stdout=True, ExitCode=False),
+        RunCommand('ls -la', stdin=False, stdout=True, ExitCode=False),
+        RunCommand('go build main.go', stdin=False, stdout=True, echo=True),
+        RunCommand('ls -la', stdin=False, stdout=True, ExitCode=False),
+        RunCommand('./main', stdin=True, stdout=True, echo=True)
     )
     thread = Thread(target=project.run, daemon=True)
     thread.start()
@@ -71,6 +73,9 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.send_json(read)
         if project.stop:
             print("project finished")
+            # дочитываю последние данные
+            while (read := controller.write_websocket()) is not None:
+                await websocket.send_json(read)
             break
     del controller
     del project
