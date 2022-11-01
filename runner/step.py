@@ -23,6 +23,10 @@ class RunCommand(Step):
     stdin: bool
     # Команда выдает в консоль
     stdout: bool
+    # Записывать код возврата
+    ExitCode: bool = True
+    # Дублировать команду пользователю для наглядности в stdout
+    echo: bool = False
 
 
 @dataclass
