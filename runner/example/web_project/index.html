@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Example</title>
+        <script defer src="/static/app.js"></script>
+    </head>
+    <body>
+        <h1>Go online</h1>
+        <div>
+            <textarea id="messageText" autocomplete="off" rows=25 cols=80>
+package main
+
+import (
+    "fmt"
+    "time"
+)
+
+func f(from string) {
+    for i := 0; i < 3; i++ {
+        fmt.Println(from, ":", i)
+        time.Sleep(time.Second)
+    }
+}
+
+func main() {
+
+    var text string
+    fmt.Println("enter value:")
+    fmt.Scan(&text)
+    f(text)
+
+    go f("goroutine1")
+    go f("goroutine2")
+
+    time.Sleep(time.Second * 4)
+    fmt.Println("done")
+}
+            </textarea>
+            <p>
+                <button id="start_button" onclick="start(event)">Start</button>
+                <button id="run_button" onclick="run(event)" disabled>Run</button></p>
+        </div>
+        <p><input placeholder="stdin" type=text id="stdIOText"/><button onclick="newstdIO(event)">send</button></p>
+        <p>process output:</p>
+        <pre id='messages' style='font-family:Monospace;'>
+        </pre>
+    </body>
+</html>

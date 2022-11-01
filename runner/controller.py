@@ -97,7 +97,35 @@ class ThreadConsoleController(Controller):
             self._stop = True
 
 
-# old, remove
+class ThreadController(Controller):
+    """Контроллер для работы между потоками"""
+    def __init__(self):
+        self._stop: bool = False
+        self._lock: Lock = Lock()
+        self.container_queue = Queue()
+        self.user_queue = Queue()
+
+    def read_websocket(self, data: str):
+        self.container_queue.put(data + '\n')
+
+    def read(self) -> str | None:
+        if self.container_queue.qsize() == 0:
+            return None
+        else:
+            data = self.container_queue.get_nowait()
+            return data
+
+    def write(self, data: dict[Literal["stdout", "stderr", "ExitCode"]]):
+        self.user_queue.put(data)
+
+    def write_websocket(self):
+        if self.user_queue.qsize() > 0:
+            return self.user_queue.get_nowait()
+        else:
+            return None
+
+
+# old, (web_container)
 class ProjectController:
     """Контроллер запущенного проекта"""
     def __init__(self, code, container: Container):
