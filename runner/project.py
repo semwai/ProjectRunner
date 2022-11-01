@@ -14,10 +14,12 @@ class Project:
         self.container = container
         self.last_ExitCode = None  # код возврата из последней запущенной команды
         self.stop = False  # завершен ли проект
+        self._kill = False  # завершен ли проект с внешней стороны (пользователь закрыл вкладку браузера)
 
     def step(self):
         if self.current == len(self.steps):
             self.stop = True
+            self.current += 1
             return
         if self.last_ExitCode is not None and self.last_ExitCode != 0:
             self.stop = True
@@ -30,8 +32,8 @@ class Project:
             case RunCommand(command, read, write):
                 c = self.container.command(command)
                 while c.status()['Running']:
-                    # небольшая задержка чтобы проект не спрашивал постоянно у контейнера и пользователя данные
-                    time.sleep(0.5)
+                    if self._kill:
+                        return
                     if write:
                         data = c.read()
                         if data != (None, None):
@@ -40,6 +42,8 @@ class Project:
                         data = self.controller.read()
                         if data is not None:
                             c.write(data)
+                    # небольшая задержка чтобы проект не спрашивал постоянно у контейнера и пользователя данные
+                    time.sleep(0.5)
                 # чтение оставшихся данных
                 if write:
                     while True:
@@ -52,8 +56,13 @@ class Project:
         self.current += 1
 
     def run(self):
-        while self.current < len(self.steps):
+        while self.current <= len(self.steps) and not self._kill:
             self.step()
+
+    def kill(self):
+        """Закончить выполнение проекта если пользователь закрыл выполнение на своей стороне"""
+        self._kill = True
+
 
     def __del__(self):
         del self.container

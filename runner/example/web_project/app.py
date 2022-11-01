@@ -31,7 +31,6 @@ async def websocket_read_timeout(websocket: WebSocket, timeout=0.1):
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    project, controller = None, None
     # жду программу
     while True:
         try:
@@ -41,7 +40,6 @@ async def websocket_endpoint(websocket: WebSocket):
         if message is not None and message.get('type') == 'program':
             code = message.get('data')
             break
-    print(code[:40])
     controller = ThreadController()
     project = Project(
         controller,
@@ -51,7 +49,7 @@ async def websocket_endpoint(websocket: WebSocket):
         RunCommand('ls -la', stdin=False, stdout=True),
         RunCommand('./main', stdin=True, stdout=True)
     )
-    thread = Thread(target=project.run, daemon=False)
+    thread = Thread(target=project.run, daemon=True)
     thread.start()
     while True:
         # Жду сообщение от клиента, если не придет сообщение, то иду дальше проверять сообщения от контейнера
@@ -64,11 +62,13 @@ async def websocket_endpoint(websocket: WebSocket):
         # Клиент может отключиться
         except WebSocketDisconnect:
             print("client disconnect")
+            project.kill()
             break
 
         if (read := controller.write_websocket()) is not None:
             await websocket.send_json(read)
         if project.stop:
+            print("project finished")
             break
     del controller
     del project
