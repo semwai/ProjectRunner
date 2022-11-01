@@ -2,6 +2,7 @@
 <html>
     <head>
         <title>Example</title>
+        <script defer src="/static/app.js"></script>
     </head>
     <body>
         <h1>Go online</h1>
@@ -35,41 +36,13 @@ func main() {
     fmt.Println("done")
 }
             </textarea>
-            <p><button onclick="newProgram(event)">Run</button></p>
+            <p>
+                <button id="start_button" onclick="start(event)">Start</button>
+                <button id="run_button" onclick="run(event)" disabled>Run</button></p>
         </div>
-        <p>stdin:</p>
-        <p><input type=text id="stdIOText"/><button onclick="newstdIO(event)">send</button></p>
+        <p><input placeholder="stdin" type=text id="stdIOText"/><button onclick="newstdIO(event)">send</button></p>
         <p>process output:</p>
         <pre id='messages' style='font-family:Monospace;'>
         </pre>
-        <script>
-var ws = new WebSocket("ws://localhost:8000/ws");
-ws.onmessage = function(event) {
-    var messages = document.getElementById('messages')
-    msg = JSON.parse(event.data)
-    console.log(msg)
-    if (msg.stdout) {
-        messages.innerHTML += `<span>${msg.stdout}<span>`
-    }
-    if (msg.stderr) {
-        messages.innerHTML += `<span style="color:red;">${msg.stderr}<span>`
-    }
-    if (msg.ExitCode) {
-        messages.innerHTML += `<span style="color:blue;">${msg.ExitCode}<span>`
-    }
-};
-function newProgram(event) {
-    document.getElementById("messages").innerHTML = ""
-    var input = document.getElementById("messageText")
-    ws.send(JSON.stringify({type: 'program', data: input.value}))
-    event.preventDefault()
-}
-function newstdIO(event) {
-    var input = document.getElementById("stdIOText")
-    messages.innerHTML += `<span style="color:green;">${input.value}<br><span>`
-    ws.send(JSON.stringify({type: 'stdio', data: input.value}))
-    event.preventDefault()
-}
-        </script>
     </body>
 </html>

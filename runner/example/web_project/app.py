@@ -2,6 +2,7 @@ from threading import Thread
 
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.websockets import WebSocketDisconnect # noqa
 import asyncio
 import uvicorn
@@ -12,6 +13,7 @@ from runner.project import Project
 from runner.step import AddFile, RunCommand
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 @app.get("/")
