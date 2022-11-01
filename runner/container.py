@@ -63,7 +63,7 @@ class Container:
     def __init__(self, image: str):
         """Запускаю контейнер и увожу его в вечный сон (контейнер использую для загрузки файлов)"""
         self.image = image
-        unique_id = uuid()
+        unique_id = uuid().hex
         self.volume = client.volumes.create(name=f"volume_{unique_id}")
         self.container = client.containers.run(
             self.image,
@@ -107,7 +107,7 @@ class Container:
             detach=True,
             network_disabled=True,
             stdin_open=True,
-            name=f"command_{uuid()}"
+            name=f"command_{uuid().hex}"
         )
         self.containers.append(container)
         return Command(container)
