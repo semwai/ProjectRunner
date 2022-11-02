@@ -7,10 +7,9 @@ from starlette.websockets import WebSocketDisconnect # noqa
 import asyncio
 import uvicorn
 
-from runner.container import Container
+from runner.builder import GoProject
 from runner.controller import ThreadController
-from runner.project import Project
-from runner.step import AddFile, RunCommand
+
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -43,16 +42,7 @@ async def websocket_endpoint(websocket: WebSocket):
             code = message.get('data')
             break
     controller = ThreadController()
-    project = Project(
-        controller,
-        Container('golang:alpine'),
-        AddFile('main.go', code),
-        RunCommand('echo "Hello user, v0.2.0"', stdin=False, stdout=True, ExitCode=False),
-        RunCommand('ls -la', stdin=False, stdout=True, ExitCode=False),
-        RunCommand('go build main.go', stdin=False, stdout=True, echo=True),
-        RunCommand('ls -la', stdin=False, stdout=True, ExitCode=False),
-        RunCommand('./main', stdin=True, stdout=True, echo=True)
-    )
+    project = GoProject(controller, code)
     thread = Thread(target=project.run, daemon=True)
     thread.start()
     while True:

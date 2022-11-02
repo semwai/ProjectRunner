@@ -8,7 +8,6 @@ function start(event) {
     ws.onmessage = function(event) {
         var messages = document.getElementById('messages')
         msg = JSON.parse(event.data)
-        console.log(msg)
         if (msg.stdout) {
             messages.innerHTML += `<span>${msg.stdout}</span>`
         }
@@ -18,6 +17,7 @@ function start(event) {
         if (msg.ExitCode) {
             messages.innerHTML += `<span style="color:white;">${msg.ExitCode}</span>`
         }
+        messages.scrollTop += 1000
     };
 }
 
@@ -27,8 +27,8 @@ function run(event) {
     }
     run_button.disabled = true
     document.getElementById("messages").innerHTML = ""
-    var input = document.getElementById("messageText")
-    ws.send(JSON.stringify({type: 'program', data: input.value}))
+    //var input = document.getElementById("messageText")
+    ws.send(JSON.stringify({type: 'program', data: editor.getValue()}))
     event.preventDefault()
 }
 
@@ -42,7 +42,23 @@ function newstdIO(event) {
     event.preventDefault()
 }
 
-document.getElementById("messageText").value = `package main
+function decorate(start, end){
+var decorations = editor.deltaDecorations(
+	[],
+	[
+		{
+			range: new monaco.Range(start, 1, end, 1),
+			options: {
+			    className: 'myContentClass',
+				glyphMarginClassName: 'myGlyphMarginClass',
+			    isWholeLine: true,
+			}
+		}
+	]
+);
+}
+
+code = `package main
 
 import (
     "fmt"
