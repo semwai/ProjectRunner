@@ -4,7 +4,7 @@ function start(event) {
     document.getElementById("messages").innerHTML = ""
     start_button.innerHTML = "Restart"
     run_button.disabled = false
-    ws = new WebSocket("ws://localhost:8000/ws");
+    ws = new WebSocket(`ws://${window.location.host}/ws?project_id=${project_id}`);
     ws.onmessage = function(event) {
         var messages = document.getElementById('messages')
         msg = JSON.parse(event.data)
@@ -58,30 +58,9 @@ var decorations = editor.deltaDecorations(
 );
 }
 
-code = `package main
 
-import (
-    "fmt"
-    "time"
-)
-
-func f(from string) {
-    for i := 0; i < 3; i++ {
-        fmt.Println(from, ":", i)
-        time.Sleep(time.Second)
-    }
-}
-
-func main() {
-
-    var text string
-    fmt.Print("enter value:")
-    fmt.Scan(&text)
-    f(text)
-
-    go f("goroutine1")
-    go f("goroutine2")
-
-    time.Sleep(time.Second * 4)
-    fmt.Println("done")
-}`
+setTimeout(async() => {
+    var res = await fetch(`/api/project/${project_id}`)
+    var p = await res.json()
+    editor.setValue(p.example)
+}, 500)

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Example</title>
+        <script defer src="/static/app.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs/loader.min.js"></script>
+        <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.20.0/min/vs/editor/editor.main.min.css">
+        <link rel="stylesheet" href="/static/style.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div class="logo">
+            <div style="width:33%"><a href="/">CodeRunner</a></div>
+            <div style="width:33%">Java online</div>
+            <div style="width:33%"></div>
+        </div>
+        <div class="container">
+            <div>
+                <!--textarea id="messageText" autocomplete="off"></textarea-->
+                <div id="monaco_editor"></div>
+                <p>
+                    <button id="start_button" onclick="start(event)">Start</button>
+                    <button id="run_button" onclick="run(event)" disabled>Run</button>
+                </p>
+            </div>
+            <div>
+                <p>
+                    <input placeholder="stdin" type=text id="stdIOText"/>
+                    <button onclick="newstdIO(event)">send</button>
+                </p>
+                 <pre id='messages'></pre>
+            </div>
+        </div>
+<script>
+// require is provided by loader.min.js.
+// https://stackoverflow.com/a/63179814/17676574
+var project_id = 2;
+var editor = null;
+require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs' }});
+require(["vs/editor/editor.main"], () => {
+  editor = monaco.editor.create(document.getElementById('monaco_editor'), {
+    glyphMargin: false,
+    value: '',
+    language: 'java',
+    theme: 'vs-dark',
+  });
+});
+
+
+
+</script>
+    </body>
+</html>

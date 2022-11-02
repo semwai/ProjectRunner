@@ -33,8 +33,7 @@ class Project:
                     if self._kill:
                         return
                     if write:
-                        data = c.read()
-                        if data != (None, None):
+                        while (data := c.read()) != (None, None):
                             self.controller.write({'stdout': data[0], 'stderr': data[1]})
                     if read and c.status()['Running']:
                         data = self.controller.read()

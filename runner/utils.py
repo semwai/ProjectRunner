@@ -1,7 +1,7 @@
 from typing import Literal
 
 
-def colored(text: str, color: Literal["HEADER", "OKBLUE", "OKCYAN", "OKGREEN", "WARNING", "FAIL", "ENDC", "BOLD", "UNDERLINE"]) -> str:
+def colored(text: str, color: Literal["HEADER", "OKBLUE", "OKCYAN", "OKGREEN", "WARNING", "FAIL", "ENDC", "BOLD", "UNDERLINE"]) -> str:  # noqa
     pre = ""
     match color:
         case "HEADER":

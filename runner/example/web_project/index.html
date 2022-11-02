@@ -7,42 +7,43 @@
         <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.20.0/min/vs/editor/editor.main.min.css">
         <link rel="stylesheet" href="/static/style.css">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+.project {
+    width: 400px;
+    background-color: #1e1d1d;
+    padding: 10px;
+}
+        </style>
     </head>
     <body>
+        <div class="logo">
+            <div style="width:33%"></div>
+            <div style="width:33%"><a href="/">CodeRunner</a></div>
+            <div style="width:33%"></div>
+        </div>
         <div class="container">
-            <p class="logo">CodeRunner</p>
+
+
             <div>
-                <!--textarea id="messageText" autocomplete="off"></textarea-->
-                <div id="monaco_editor"></div>
-                <p>
-                    <button id="start_button" onclick="start(event)">Start</button>
-                    <button id="run_button" onclick="run(event)" disabled>Run</button>
-                </p>
-            </div>
-            <div>
-                <p>
-                    <input placeholder="stdin" type=text id="stdIOText"/>
-                    <button onclick="newstdIO(event)">send</button>
-                </p>
-                 <pre id='messages'></pre>
+                <br>
+                <a href="/project/1">
+                    <div class="project">
+                        <h2> Golang compiler </h2>
+                    </div>
+                </a>
+                <br>
+                <a href="/project/2">
+                    <div class="project">
+                        <h2> Java compiler </h2>
+                    </div>
+                </a>
+                <br>
+                <a href="/project/3">
+                    <div class="project">
+                        <h2> Z3 language </h2>
+                    </div>
+                </a>
             </div>
         </div>
-<script>
-// require is provided by loader.min.js.
-// https://stackoverflow.com/a/63179814/17676574
-var editor = null;
-require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs' }});
-require(["vs/editor/editor.main"], () => {
-  editor = monaco.editor.create(document.getElementById('monaco_editor'), {
-    glyphMargin: false,
-    value: code,
-    language: 'go',
-    theme: 'vs-dark',
-  });
-});
-
-
-
-</script>
     </body>
 </html>

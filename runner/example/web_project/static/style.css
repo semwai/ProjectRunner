@@ -2,6 +2,8 @@
 body {
     background-color: #333333;
     color: #d4d4d4;
+    padding: 0px;
+    margin: 0px;
 }
 
 input, textarea, button {
@@ -17,7 +19,7 @@ button[disabled]{
 
 #messages {
     background-color: #1e1d1d;
-    width: 81ch;
+    width: 600px;
     height: 30ch;
     overflow: scroll;
     scroll-snap-align: end;
@@ -35,17 +37,26 @@ button[disabled]{
     font-size: 50px;
     margin: 0px;
     font-family: Arial;
+    background-color: #1e1d1d;
+    padding: 5px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
 }
 
+h1, h2, h3 {
+    font-family: Arial;
+}
 #messageText {
     overflow-y: scroll;
     font-family: Monospace;
-    width: 80ch;
+    width: 600px;
     height: 50ch;
 }
 
 #monaco_editor {
-    width: 80ch;
+    width: 600px;
     height: 400px;
 }
 
@@ -54,4 +65,9 @@ button[disabled]{
 }
 .myContentClass {
 	background: #7d2f2f;
+}
+
+a {
+    color: white;
+    text-decoration: none;
 }
