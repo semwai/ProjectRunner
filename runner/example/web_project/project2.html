@@ -37,17 +37,22 @@
 var project_id = 2;
 var editor = null;
 require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs' }});
-require(["vs/editor/editor.main"], () => {
-  editor = monaco.editor.create(document.getElementById('monaco_editor'), {
-    glyphMargin: false,
-    value: '',
-    language: 'java',
-    theme: 'vs-dark',
-  });
+require(["vs/editor/editor.main"], async () => {
+    editor = monaco.editor.create(document.getElementById('monaco_editor'), {
+        glyphMargin: false,
+        value: '',
+        language: 'java',
+        theme: 'vs-dark',
+    });
+
+    let res = await fetch(`/api/project/${project_id}`)
+    let p = await res.json()
+    editor.setValue(p.example)
 });
 
 
 
 </script>
+    <div id="loader" class="loader"></div>
     </body>
 </html>
