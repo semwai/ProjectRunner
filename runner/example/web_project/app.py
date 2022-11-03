@@ -62,6 +62,8 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
         if message is not None and message.get('type') == 'program':
             code = message.get('data')
             break
+    # сообщение пользователю, что нужно подождать загрузку
+    await websocket.send_json({"wait": True})
     controller = ThreadController()
     match project_id:
         case 1:
@@ -75,6 +77,7 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
 
     thread = Thread(target=project.run, daemon=True)
     thread.start()
+    await websocket.send_json({"wait": False})
     while True:
         # Жду сообщение от клиента, если не придет сообщение, то иду дальше проверять сообщения от контейнера
         try:

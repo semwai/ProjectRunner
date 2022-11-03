@@ -6,8 +6,16 @@ function start(event) {
     run_button.disabled = false
     ws = new WebSocket(`ws://${window.location.host}/ws?project_id=${project_id}`);
     ws.onmessage = function(event) {
-        var messages = document.getElementById('messages')
-        msg = JSON.parse(event.data)
+        let messages = document.getElementById('messages')
+        let msg = JSON.parse(event.data)
+        console.log(msg)
+        if (msg.wait === true) {
+            console.log('wait')
+            loader.style.display='block'
+        }
+        if (msg.wait === false) {
+            loader.style.display='none'
+        }
         if (msg.stdout) {
             messages.innerHTML += `<span>${msg.stdout}</span>`
         }
@@ -43,24 +51,17 @@ function newstdIO(event) {
 }
 
 function decorate(start, end){
-var decorations = editor.deltaDecorations(
-	[],
-	[
-		{
-			range: new monaco.Range(start, 1, end, 1),
-			options: {
-			    className: 'myContentClass',
-				glyphMarginClassName: 'myGlyphMarginClass',
-			    isWholeLine: true,
-			}
-		}
-	]
-);
+    var decorations = editor.deltaDecorations(
+        [],
+        [
+            {
+                range: new monaco.Range(start, 1, end, 1),
+                options: {
+                    className: 'myContentClass',
+                    glyphMarginClassName: 'myGlyphMarginClass',
+                    isWholeLine: true,
+                }
+            }
+        ]
+    );
 }
-
-
-setTimeout(async() => {
-    var res = await fetch(`/api/project/${project_id}`)
-    var p = await res.json()
-    editor.setValue(p.example)
-}, 500)
