@@ -1,3 +1,4 @@
+import time
 from threading import Thread
 
 import fastapi
@@ -11,7 +12,7 @@ import uvicorn
 import runner.builder
 from runner.controller import ThreadController
 import runner.storage
-
+from runner.example.web_project.schemas import GetProjects, GetProject
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -27,13 +28,15 @@ async def get(project_id: int):
     return HTMLResponse(open(f"project{project_id}.html").read())
 
 
-@app.get("/api/projects", response_model=runner.storage.Projects)
+@app.get("/api/projects", response_model=GetProjects, tags=["api"])
 async def get():
+    time.sleep(1)  # for frontend test
     return runner.storage.projects
 
 
-@app.get("/api/project/{project_id}", response_model=runner.storage.Project)
+@app.get("/api/project/{project_id}", response_model=GetProject, tags=["api"])
 async def get(project_id: int):
+    time.sleep(1)  # for frontend test
     try:
         return [project for project in runner.storage.projects.data if project.id == project_id][0]
     except IndexError:
