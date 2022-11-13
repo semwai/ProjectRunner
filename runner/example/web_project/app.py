@@ -75,6 +75,8 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
             project = runner.builder.JavaProject(controller, code)
         case 3:
             project = runner.builder.Z3Project(controller, code)
+        case 4:
+            project = runner.builder.PythonProject(controller, code)
         case _:
             raise fastapi.HTTPException(404, detail='project not found')
 
