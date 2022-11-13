@@ -1,15 +1,15 @@
 from runner.container import Container
 from runner.controller import Controller
 from runner.project import Project
-from runner.step import AddFile, RunCommand
+from runner.step import AddFile, RunCommand, Print
 
 
 def GoProject(controller: Controller, code) -> Project:
     project = Project(
         controller,
         Container('golang:alpine'),
+        Print("Hello user, v0.41"),
         AddFile('main.go', code),
-        RunCommand('echo "Hello user, v0.4.1"', stdin=False, stdout=True, ExitCode=False),
         RunCommand('ls -la', stdin=False, stdout=True, ExitCode=False),
         RunCommand('go build main.go', stdin=False, stdout=True, echo=True),
         RunCommand('ls -la', stdin=False, stdout=True, ExitCode=False),
@@ -22,8 +22,8 @@ def JavaProject(controller: Controller, code) -> Project:
     project = Project(
         controller,
         Container('openjdk:11'),
+        Print("Hello user, v0.41"),
         AddFile('Main.java', code),
-        RunCommand('echo "Hello user, v0.4.1"', stdin=False, stdout=True, ExitCode=False),
         #  RunCommand('ls -la', stdin=False, stdout=True, ExitCode=False),
         RunCommand('javac Main.java', stdin=False, stdout=True, echo=True),
         #  RunCommand('ls', stdin=False, stdout=True, ExitCode=False),
@@ -36,6 +36,7 @@ def Z3Project(controller: Controller, code) -> Project:
     project = Project(
         controller,
         Container('ghcr.io/z3prover/z3:ubuntu-20.04-bare-z3-sha-e3a4425'),
+        Print("Hello user, v0.41", file='stderr'),
         AddFile('main.z3', code),
         # RunCommand('echo "Hello user, v0.4.0"', stdin=False, stdout=True, ExitCode=False),
         RunCommand('/app/main.z3', stdin=True, stdout=True, echo=False)

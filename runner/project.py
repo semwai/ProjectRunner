@@ -1,7 +1,7 @@
 import time
 from runner.container import Container
 from runner.controller import Controller
-from runner.step import AddFile, RunCommand
+from runner.step import AddFile, RunCommand, Print
 
 
 class Project:
@@ -22,6 +22,8 @@ class Project:
             return
         inst = self.steps[self.current]
         match inst:
+            case Print(text, file):
+                self.controller.write({file: text})
             case AddFile(name, data):
                 self.container.add_file(name, data)
                 self.last_ExitCode = None
