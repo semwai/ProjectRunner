@@ -1,10 +1,10 @@
-import time
 from threading import Thread
 
 import fastapi
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.cors import CORSMiddleware
 from starlette.websockets import WebSocketDisconnect # noqa
 import asyncio
 import uvicorn
@@ -16,6 +16,17 @@ from runner.example.web_project.schemas import GetProjects, GetProject
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
+origins = [
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
