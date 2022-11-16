@@ -1,5 +1,6 @@
 from abc import ABC
 from dataclasses import dataclass
+from typing import Literal
 
 
 @dataclass
@@ -13,6 +14,13 @@ class AddFile(Step):
     """Добавление файла"""
     name: str
     data: str | bytes
+
+
+@dataclass
+class Print(Step):
+    """Напечатать сообщение в консоль"""
+    text: str
+    file: Literal["stdout", "stderr"] = "stdout"
 
 
 @dataclass

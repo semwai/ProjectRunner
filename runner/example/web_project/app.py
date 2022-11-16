@@ -4,6 +4,7 @@ import fastapi
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.cors import CORSMiddleware
 from starlette.websockets import WebSocketDisconnect # noqa
 import asyncio
 import uvicorn
@@ -11,10 +12,21 @@ import uvicorn
 import runner.builder
 from runner.controller import ThreadController
 import runner.storage
-
+from runner.example.web_project.schemas import GetProjects, GetProject
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
+origins = [
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
@@ -27,13 +39,15 @@ async def get(project_id: int):
     return HTMLResponse(open(f"project{project_id}.html").read())
 
 
-@app.get("/api/projects", response_model=runner.storage.Projects)
+@app.get("/api/projects", response_model=GetProjects, tags=["api"])
 async def get():
+    await asyncio.sleep(1)  # for frontend test
     return runner.storage.projects
 
 
-@app.get("/api/project/{project_id}", response_model=runner.storage.Project)
+@app.get("/api/project/{project_id}", response_model=GetProject, tags=["api"])
 async def get(project_id: int):
+    await asyncio.sleep(1)  # for frontend test
     try:
         return [project for project in runner.storage.projects.data if project.id == project_id][0]
     except IndexError:
@@ -72,6 +86,8 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
             project = runner.builder.JavaProject(controller, code)
         case 3:
             project = runner.builder.Z3Project(controller, code)
+        case 4:
+            project = runner.builder.PythonProject(controller, code)
         case _:
             raise fastapi.HTTPException(404, detail='project not found')
 

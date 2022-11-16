@@ -70,6 +70,9 @@ func main() {
 ; ((define-fun x () Int 8)
 ;  (define-fun y () Int 6)
 ; )
-(exit)""")
+(exit)"""),
+        Project(id=4, name="Python", description="Python 3.10", lang="python", example="""while (y:=input())!='exit':
+    print(y)
+        """)
     ]
 )
