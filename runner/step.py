@@ -38,9 +38,15 @@ class RunCommand(Step):
 
 
 @dataclass
+class Steps(Step):
+    """Множество последовательно выполняемых команд"""
+    steps: list[Step]
+
+
+@dataclass
 class If(Step):
     """Условное выражение, например если нужно проверить код возврата последней команды и в зависимости от этого
     сделать что-нибудь """
     condition: Step
-    _if: Step
-    _else: Step
+    _if: Steps
+    _else: Steps

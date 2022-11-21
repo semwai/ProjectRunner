@@ -1,7 +1,7 @@
 from runner.container import Container
 from runner.controller import ThreadConsoleController
 from runner.project import Project
-from runner.step import AddFile, RunCommand
+from runner.step import AddFile, RunCommand, Steps
 
 
 def main():
@@ -32,10 +32,12 @@ func main() {
     project = Project(
         controller,
         Container('golang:alpine'),
-        AddFile('main.go', text),  # Вместо text будет описание источника ввода файла
-        RunCommand('go build main.go', stdin=False, stdout=True),
-        RunCommand('ls -la', stdin=False, stdout=True),
-        RunCommand('./main', stdin=True, stdout=True)
+        program=Steps([
+            AddFile('main.go', text),  # Вместо text будет описание источника ввода файла
+            RunCommand('go build main.go', stdin=False, stdout=True),
+            RunCommand('ls -la', stdin=False, stdout=True),
+            RunCommand('./main', stdin=True, stdout=True)
+        ])
     )
     controller.run()
     try:

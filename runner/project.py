@@ -1,32 +1,29 @@
 import time
 from runner.container import Container
 from runner.controller import Controller
-from runner.step import AddFile, RunCommand, Print
+from runner.step import AddFile, RunCommand, Print, Steps
 
 
 class Project:
     """Проект принимает последовательность команд, которые выполняет согласно сценарию. Данные получаются и
     отправляются на контроллер """
-    def __init__(self, controller: Controller, container: Container, *steps):
+    def __init__(self, controller: Controller, container: Container, program: Steps):
         self.controller = controller
-        self.steps = steps
-        self.current = 0
+        self.steps = program.steps
         self.container = container
         self.last_ExitCode = None  # код возврата из последней запущенной команды
         self.stop = False  # завершен ли проект
         self._kill = False  # завершен ли проект с внешней стороны (пользователь закрыл вкладку браузера)
+        self.queue = []  # очередь команд
 
-    def step(self):
-        if self.last_ExitCode is not None and self.last_ExitCode != 0:
-            self.stop = True
-            return
-        inst = self.steps[self.current]
+    def step(self) -> None:
+        inst = self.queue.pop(0)
+        self.last_ExitCode = None
         match inst:
             case Print(text, file):
                 self.controller.write({file: text})
             case AddFile(name, data):
                 self.container.add_file(name, data)
-                self.last_ExitCode = None
             case RunCommand(command, read, write, ExitCode, echo):
                 if echo:
                     self.controller.write({'stdout': command + '\n'})
@@ -42,7 +39,7 @@ class Project:
                         if data is not None:
                             c.write(data)
                     # небольшая задержка чтобы проект не спрашивал постоянно у контейнера и пользователя данные
-                    time.sleep(0.5)
+                    time.sleep(0.25)
                 # чтение оставшихся данных
                 if write:
                     while True:
@@ -54,13 +51,13 @@ class Project:
                     self.last_ExitCode = c.status()['ExitCode']
                 else:
                     self.last_ExitCode = None
-        self.current += 1
-        if self.current == len(self.steps):
-            self.stop = True
-            return
+            case Steps(steps):
+                self.queue = [*steps, *self.queue]
 
     def run(self):
-        while self.current < len(self.steps) and not self._kill:
+        self.queue.extend(self.steps)
+        while len(self.queue):
+            print(self.queue)
             self.step()
             if self.last_ExitCode is not None:
                 self.controller.write({'ExitCode': f"Process finished with exit code {self.last_ExitCode}\n"})
