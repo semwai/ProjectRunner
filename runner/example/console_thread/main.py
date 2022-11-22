@@ -1,7 +1,7 @@
 from runner.container import Container
 from runner.controller import ThreadConsoleController
 from runner.project import Project
-from runner.step import AddFile, RunCommand, Steps
+from runner.step import File, Run, Steps, If, Condition, Print
 
 
 def main():
@@ -20,7 +20,7 @@ func f(from string) {
 func main() {
     var text string
     fmt.Print("enter value:")
-    fmt.Scan(&text)
+    fmt.Sc an(&text)
     f(text)
     go f("goroutine1")
     go f("goroutine2")
@@ -33,10 +33,17 @@ func main() {
         controller,
         Container('golang:alpine'),
         program=Steps([
-            AddFile('main.go', text),  # Вместо text будет описание источника ввода файла
-            RunCommand('go build main.go', stdin=False, stdout=True),
-            RunCommand('ls -la', stdin=False, stdout=True),
-            RunCommand('./main', stdin=True, stdout=True)
+            File('main.go', text),  # Вместо text будет описание источника ввода файла
+            Run('go build main.go', stdin=False, stdout=True),
+            If(Condition("ExitCode", "==", 0),
+               if_branch=Steps([
+                   Run('ls -la', stdin=False, stdout=True),
+                   Run('./main', stdin=True, stdout=True)
+               ]),
+               else_branch=Steps([
+                   Print("Build error")
+               ])
+               ),
         ])
     )
     controller.run()

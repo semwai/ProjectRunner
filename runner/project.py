@@ -1,7 +1,7 @@
 import time
 from runner.container import Container
 from runner.controller import Controller
-from runner.step import AddFile, RunCommand, Print, Steps
+from runner.step import File, Run, Print, Steps, If, Condition
 
 
 class Project:
@@ -11,20 +11,21 @@ class Project:
         self.controller = controller
         self.steps = program.steps
         self.container = container
-        self.last_ExitCode = None  # код возврата из последней запущенной команды
+        self.dict = {}  # переменные проекта хранятся тут - код возврата и различные другие параметры
         self.stop = False  # завершен ли проект
         self._kill = False  # завершен ли проект с внешней стороны (пользователь закрыл вкладку браузера)
         self.queue = []  # очередь команд
 
     def step(self) -> None:
         inst = self.queue.pop(0)
-        self.last_ExitCode = None
         match inst:
             case Print(text, file):
                 self.controller.write({file: text})
-            case AddFile(name, data):
+                self.dict['ExitCode'] = None
+            case File(name, data):
                 self.container.add_file(name, data)
-            case RunCommand(command, read, write, ExitCode, echo):
+                self.dict['ExitCode'] = None
+            case Run(command, read, write, ExitCode, echo):
                 if echo:
                     self.controller.write({'stdout': command + '\n'})
                 c = self.container.command(command)
@@ -48,21 +49,34 @@ class Project:
                             break
                         self.controller.write({'stdout': read[0], 'stderr': read[1]})
                 if ExitCode:
-                    self.last_ExitCode = c.status()['ExitCode']
+                    self.dict['ExitCode'] = c.status()['ExitCode']
                 else:
-                    self.last_ExitCode = None
+                    self.dict['ExitCode'] = None
             case Steps(steps):
                 self.queue = [*steps, *self.queue]
+                self.dict['ExitCode'] = None
+            case If(Condition(variable, c, value), if_branch, else_branch):
+                flag = None
+                match c:
+                    case '!=':
+                        flag = self.dict[variable] != value
+                    case '==':
+                        flag = self.dict[variable] == value
+                if flag is None:
+                    raise Exception("Condition problem")
+                if flag:
+                    self.queue = [*if_branch.steps, *self.queue]
+                else:
+                    self.queue = [*else_branch.steps, *self.queue]
+
+                self.dict['ExitCode'] = None
 
     def run(self):
         self.queue.extend(self.steps)
         while len(self.queue):
-            print(self.queue)
             self.step()
-            if self.last_ExitCode is not None:
-                self.controller.write({'ExitCode': f"Process finished with exit code {self.last_ExitCode}\n"})
-                if self.last_ExitCode != 0:
-                    break
+            if self.dict['ExitCode'] is not None:
+                self.controller.write({'ExitCode': f"Process finished with exit code {self.dict['ExitCode']}\n"})
 
     def kill(self):
         """Закончить выполнение проекта если пользователь закрыл выполнение на своей стороне"""
