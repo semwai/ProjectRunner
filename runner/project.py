@@ -11,17 +11,28 @@ class Project:
         self.controller = controller
         self.steps = program.steps
         self.container = container
-        self.dict = {}  # переменные проекта хранятся тут - код возврата и различные другие параметры
+        # переменные проекта хранятся тут - код возврата и различные другие параметры
+        self.dict = {'stdout': '', 'stderr': ''}
         self.stop = False  # завершен ли проект
         self._kill = False  # завершен ли проект с внешней стороны (пользователь закрыл вкладку браузера)
         self.queue = []  # очередь команд
 
+    def append(self, data):
+        """Добавить данные в переменные ввода"""
+        if data[0]:
+            self.dict['stdout'] += data[0]
+        if data[1]:
+            self.dict['stderr'] += data[0]
+
     def step(self) -> None:
         inst = self.queue.pop(0)
+        # print(self.dict)
         match inst:
             case Print(text, file):
-                self.controller.write({file: text})
+                self.controller.write({file: text + '\n'})
                 self.dict['ExitCode'] = None
+                self.dict['stdout'] = ''
+                self.dict['stderr'] = ''
             case File(name, data):
                 self.container.add_file(name, data)
                 self.dict['ExitCode'] = None
@@ -30,11 +41,13 @@ class Project:
                     self.controller.write({'stdout': command + '\n'})
                 c = self.container.command(command)
                 while c.status()['Running']:
+                    # если проект завершен извне
                     if self._kill:
                         return
                     if write:
                         while (data := c.read()) != (None, None):
                             self.controller.write({'stdout': data[0], 'stderr': data[1]})
+                            self.append(data)
                     if read and c.status()['Running']:
                         data = self.controller.read()
                         if data is not None:
@@ -48,6 +61,7 @@ class Project:
                         if read == ('', ''):
                             break
                         self.controller.write({'stdout': read[0], 'stderr': read[1]})
+                        self.append(read)
                 if ExitCode:
                     self.dict['ExitCode'] = c.status()['ExitCode']
                 else:

@@ -23,6 +23,10 @@ class Print(Step):
     text: str
     file: Literal["stdout", "stderr"] = "stdout"
 
+    def __post_init__(self):
+        if self.file is None:
+            self.file = "stdout"
+
 
 @dataclass
 class Run(Step):
@@ -36,6 +40,12 @@ class Run(Step):
     ExitCode: bool = True
     # Дублировать команду пользователю для наглядности в stdout
     echo: bool = False
+
+    def __post_init__(self):
+        if self.ExitCode is None:
+            self.ExitCode = True
+        if self.echo is None:
+            self.echo = False
 
 
 @dataclass
