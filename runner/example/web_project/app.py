@@ -18,6 +18,8 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 origins = [
     "http://localhost:3000",
+    "http://localhost:80",
+    "http://v1442641.hosted-by-vdsina.ru"
 ]
 
 app.add_middleware(
