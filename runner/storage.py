@@ -73,6 +73,23 @@ func main() {
 (exit)"""),
         Project(id=4, name="Python", description="Python 3.10", lang="python", example="""while (y:=input())!='exit':
     print(y)
+        """),
+        Project(id=5, name="nusmv", description="nusmv", lang="nusmv", example="""MODULE main
+VAR
+  gate1 : process inverter(gate3.output);
+  gate2 : process inverter(gate1.output);
+  gate3 : process inverter(gate2.output);
+SPEC
+  (AG AF gate1.output) & (AG AF !gate1.output)
+
+MODULE inverter(input)
+VAR
+  output : boolean;
+ASSIGN
+  init(output) := FALSE;
+  next(output) := !input;
+FAIRNESS
+  running
         """)
     ]
 )

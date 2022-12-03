@@ -67,7 +67,7 @@ class Container:
         self.volume = client.volumes.create(name=f"volume_{unique_id}")
         self.container = client.containers.run(
             self.image,
-            command='sleep infinity',
+            command='sleep 36000',
             working_dir='/app',
             volumes=[f'{self.volume.id}:/app'],
             tty=False,

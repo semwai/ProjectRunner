@@ -55,8 +55,6 @@ tasks:
         tasks:
           - type: Print
             text: Error
-          - type: Print
-            text: error
       else_branch:
         tasks:
           - type: Print
