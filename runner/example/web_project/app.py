@@ -49,7 +49,8 @@ async def get():
 @app.get("/api/project/{project_id}", response_model=GetProject, tags=["api"])
 async def get(project_id: int):
     try:
-        return [project for project in runner.storage.projects.data if project.id == project_id][0]
+        project = [project for project in runner.storage.projects.data if project.id == project_id][0]
+        return project.dict(exclude_none=True)
     except IndexError:
         raise fastapi.HTTPException(status_code=404, detail="project not found")
 

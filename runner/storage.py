@@ -1,4 +1,7 @@
 from pydantic import BaseModel  # noqa
+import pathlib
+
+from runner.input import UI, Input
 
 
 class Project(BaseModel):
@@ -8,88 +11,30 @@ class Project(BaseModel):
     description: str
     lang: str
     example: str
+    ui: UI
 
 
 class Projects(BaseModel):
     data: list[Project]
 
 
+def ex(name: str) -> str:
+    file = pathlib.Path(__file__).parent.resolve() / f"example/progs/{name}"
+    return open(file).read()
+
+
+emptyUI = UI(data=[])
+
+goUI = UI(data=[
+    Input(name='editor', description='code input', destination='file', type='code', file='main.go', language='go')
+])
+
 projects = Projects(
     data=[
-        Project(id=1, name="Go", description="Golang language compiler", lang="go",
-                example="""package main
-
-import (
-    "fmt"
-    "time"
-)
-
-func f(from string) {
-    for i := 0; i < 3; i++ {
-        fmt.Println(from, ":", i)
-        time.Sleep(time.Second)
-    }
-}
-
-func main() {
-
-    var text string
-    fmt.Print("enter value:")
-    fmt.Scan(&text)
-    f(text)
-
-    go f("goroutine1")
-    go f("goroutine2")
-
-    time.Sleep(time.Second * 4)
-    fmt.Println("done")
-}               
-                """),
-        Project(id=2, name="Java", description="Java language compiler", lang="java",
-                example="""public class Main {
-  public static void main(String[] args) {
-    int x = 5;
-    int y = 2;
-    System.out.println(x % y);
-  }
-}"""),
-        Project(id=3, name="Z3", description="Z3 language", lang="Z3",
-                example="""; Getting values or models
-(set-option :print-success false)
-(set-option :produce-models true)
-(set-logic QF_LIA)
-(declare-const x Int)
-(declare-const y Int)
-(assert (= (+ x (* 2 y)) 20))
-(assert (= (- x y) 2))
-(check-sat)
-; sat
-(get-value (x y))
-; ((x 8) (y 6))
-(get-model)
-; ((define-fun x () Int 8)
-;  (define-fun y () Int 6)
-; )
-(exit)"""),
-        Project(id=4, name="Python", description="Python 3.10", lang="python", example="""while (y:=input())!='exit':
-    print(y)
-        """),
-        Project(id=5, name="nusmv", description="nusmv", lang="nusmv", example="""MODULE main
-VAR
-  gate1 : process inverter(gate3.output);
-  gate2 : process inverter(gate1.output);
-  gate3 : process inverter(gate2.output);
-SPEC
-  (AG AF gate1.output) & (AG AF !gate1.output)
-
-MODULE inverter(input)
-VAR
-  output : boolean;
-ASSIGN
-  init(output) := FALSE;
-  next(output) := !input;
-FAIRNESS
-  running
-        """)
+        Project(id=1, name="Go", description="Golang language compiler", lang="go", example=ex('main.go'), ui=goUI),
+        Project(id=2, name="Java", description="Java language compiler", lang="java", example=ex('Main.java'), ui=emptyUI),
+        Project(id=3, name="Z3", description="Z3 language", lang="Z3", example=ex('main.z3'), ui=emptyUI),
+        Project(id=4, name="Python", description="Python 3.10", lang="python", example=ex('main.smv'), ui=emptyUI),
+        Project(id=5, name="nusmv", description="nusmv", lang="nusmv", example=ex('main.smv'), ui=emptyUI)
     ]
 )
