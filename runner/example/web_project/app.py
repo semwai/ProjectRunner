@@ -4,7 +4,7 @@ import fastapi
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.cors import CORSMiddleware # noqa
 from starlette.websockets import WebSocketDisconnect # noqa
 import asyncio
 import uvicorn
@@ -18,7 +18,7 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 origins = [
     "http://localhost:3000",
-    "http://localhost:80",
+    "http://localhost",
     "http://v1442641.hosted-by-vdsina.ru"
 ]
 
@@ -31,9 +31,9 @@ app.add_middleware(
 )
 
 
-@app.get("/")
-async def get():
-    return HTMLResponse(open("index.html").read())
+# @app.get("/")
+# async def get():
+#     return HTMLResponse(open("index.html").read())
 
 
 @app.get("/project/{project_id}")
@@ -43,13 +43,11 @@ async def get(project_id: int):
 
 @app.get("/api/projects", response_model=GetProjects, tags=["api"])
 async def get():
-    await asyncio.sleep(1)  # for frontend test
     return runner.storage.projects
 
 
 @app.get("/api/project/{project_id}", response_model=GetProject, tags=["api"])
 async def get(project_id: int):
-    await asyncio.sleep(1)  # for frontend test
     try:
         return [project for project in runner.storage.projects.data if project.id == project_id][0]
     except IndexError:
