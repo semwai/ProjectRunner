@@ -1,10 +1,6 @@
-import logging
 from threading import Thread
-
 import fastapi
 from fastapi import FastAPI, WebSocket
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware # noqa
 from starlette.websockets import WebSocketDisconnect # noqa
 import asyncio
@@ -15,11 +11,10 @@ from runner.controller import ThreadController
 import runner.storage
 from runner.example.web_project.schemas import GetProjects, GetProject
 
-
 logger = uvicorn.config.logger
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="static"), name="static")
+
 origins = [
     "http://localhost:3000",
     "http://localhost",
@@ -35,23 +30,13 @@ app.add_middleware(
 )
 
 
-# @app.get("/")
-# async def get():
-#     return HTMLResponse(open("index.html").read())
-
-
-@app.get("/project/{project_id}")
-async def get(project_id: int):
-    return HTMLResponse(open(f"project{project_id}.html").read())
-
-
 @app.get("/api/projects", response_model=GetProjects, tags=["api"])
-async def get():
+async def get_projects():
     return runner.storage.projects
 
 
 @app.get("/api/project/{project_id}", response_model=GetProject, tags=["api"])
-async def get(project_id: int):
+async def get_project(project_id: int):
     try:
         project = [project for project in runner.storage.projects.data if project.id == project_id][0]
         return project.dict(exclude_none=True)
@@ -78,10 +63,17 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
             message = await websocket_read_timeout(websocket)
         except WebSocketDisconnect:
             return
+
         if message is not None and message.get('type') == 'start':
             logger.info(message)
-            code = message.get('data')['editor']
-            logger.info(message.get('data')['param'])
+            try:
+                code = message.get('data')['editor']
+                logger.info(message.get('data')['param'])
+            except KeyError as e:
+                await websocket.send_json({"wait": False})
+                await websocket.send_json({"stderr": f"{e} not found"})
+                logger.error(e)
+                return
             break
     # сообщение пользователю, что нужно подождать загрузку
     await websocket.send_json({"wait": True})

@@ -17,5 +17,4 @@ class GetProject(BaseModel):
     name: str
     description: str
     lang: str
-    example: str
     ui: UI
