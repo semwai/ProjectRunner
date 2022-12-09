@@ -1,3 +1,4 @@
+import logging
 from threading import Thread
 
 import fastapi
@@ -13,6 +14,9 @@ import runner.builder
 from runner.controller import ThreadController
 import runner.storage
 from runner.example.web_project.schemas import GetProjects, GetProject
+
+
+logger = uvicorn.config.logger
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -67,15 +71,17 @@ async def websocket_read_timeout(websocket: WebSocket, timeout=0.1):
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
     await websocket.accept()
-    print(f"{project_id=}")
+    logger.info(f"{project_id=}")
     # жду программу
     while True:
         try:
             message = await websocket_read_timeout(websocket)
         except WebSocketDisconnect:
             return
-        if message is not None and message.get('type') == 'program':
-            code = message.get('data')
+        if message is not None and message.get('type') == 'start':
+            logger.info(message)
+            code = message.get('data')['editor']
+            logger.info(message.get('data')['param'])
             break
     # сообщение пользователю, что нужно подождать загрузку
     await websocket.send_json({"wait": True})
@@ -107,14 +113,14 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
             pass
         # Клиент может отключиться
         except WebSocketDisconnect:
-            print("client disconnect")
+            logger.info("client disconnect")
             project.kill()
             break
 
         if (read := controller.write_websocket()) is not None:
             await websocket.send_json(read)
         if project.stop:
-            print("project finished")
+            logger.info("project finished")
             # дочитываю последние данные
             while (read := controller.write_websocket()) is not None:
                 await websocket.send_json(read)
@@ -122,5 +128,9 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
     del controller
     del project
 
+
 if __name__ == '__main__':
-    uvicorn.run('app:app', host='0.0.0.0', port=8000, reload=True)
+    log_config = uvicorn.config.LOGGING_CONFIG
+    log_config["formatters"]["access"]["fmt"] = "%(asctime)s - %(levelname)s - %(message)s"
+    log_config["formatters"]["default"]["fmt"] = "%(asctime)s - %(levelname)s - %(message)s"
+    uvicorn.run('app:app', host='0.0.0.0', port=8000, reload=True, log_config=log_config)
