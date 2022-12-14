@@ -18,7 +18,7 @@ class Projects(BaseModel):
 
 
 def ex(name: str) -> str:
-    file = pathlib.Path(__file__).parent.resolve() / f"example/progs/{name}"
+    file = pathlib.Path(__file__).parent.resolve() / f"progs/{name}"
     return open(file).read()
 
 
