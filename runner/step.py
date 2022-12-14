@@ -1,5 +1,6 @@
 from abc import ABC
 from dataclasses import dataclass
+from numbers import Number
 from typing import Literal
 
 
@@ -10,7 +11,7 @@ class Step(ABC):
 
 
 @dataclass
-class AddFile(Step):
+class File(Step):
     """Добавление файла"""
     name: str
     data: str | bytes
@@ -22,9 +23,13 @@ class Print(Step):
     text: str
     file: Literal["stdout", "stderr"] = "stdout"
 
+    def __post_init__(self):
+        if self.file is None:
+            self.file = "stdout"
+
 
 @dataclass
-class RunCommand(Step):
+class Run(Step):
     """Запуск консольной команды внутри контейнера"""
     command: str
     # Команде нужен ввод?
@@ -36,11 +41,31 @@ class RunCommand(Step):
     # Дублировать команду пользователю для наглядности в stdout
     echo: bool = False
 
+    def __post_init__(self):
+        if self.ExitCode is None:
+            self.ExitCode = True
+        if self.echo is None:
+            self.echo = False
+
+
+@dataclass
+class Steps(Step):
+    """Множество последовательно выполняемых команд"""
+    steps: list[Step]
+
+
+@dataclass
+class Condition:
+    """Условие для ветвлений"""
+    variable: str  # имя переменной
+    c: Literal["==", ">", "<", ">=", "<=", "!="]
+    value: str | Number
+
 
 @dataclass
 class If(Step):
     """Условное выражение, например если нужно проверить код возврата последней команды и в зависимости от этого
     сделать что-нибудь """
-    condition: Step
-    _if: Step
-    _else: Step
+    condition: Condition
+    if_branch: Steps
+    else_branch: Steps = Steps([])

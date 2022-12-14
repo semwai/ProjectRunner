@@ -1,10 +1,7 @@
 from threading import Thread
-
 import fastapi
 from fastapi import FastAPI, WebSocket
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
-from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.cors import CORSMiddleware # noqa
 from starlette.websockets import WebSocketDisconnect # noqa
 import asyncio
 import uvicorn
@@ -14,10 +11,14 @@ from runner.controller import ThreadController
 import runner.storage
 from runner.example.web_project.schemas import GetProjects, GetProject
 
+logger = uvicorn.config.logger
+
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="static"), name="static")
+
 origins = [
     "http://localhost:3000",
+    "http://localhost",
+    "http://v1442641.hosted-by-vdsina.ru"
 ]
 
 app.add_middleware(
@@ -29,27 +30,16 @@ app.add_middleware(
 )
 
 
-@app.get("/")
-async def get():
-    return HTMLResponse(open("index.html").read())
-
-
-@app.get("/project/{project_id}")
-async def get(project_id: int):
-    return HTMLResponse(open(f"project{project_id}.html").read())
-
-
 @app.get("/api/projects", response_model=GetProjects, tags=["api"])
-async def get():
-    await asyncio.sleep(1)  # for frontend test
+async def get_projects():
     return runner.storage.projects
 
 
 @app.get("/api/project/{project_id}", response_model=GetProject, tags=["api"])
-async def get(project_id: int):
-    await asyncio.sleep(1)  # for frontend test
+async def get_project(project_id: int):
     try:
-        return [project for project in runner.storage.projects.data if project.id == project_id][0]
+        project = [project for project in runner.storage.projects.data if project.id == project_id][0]
+        return project.dict(exclude_none=True)
     except IndexError:
         raise fastapi.HTTPException(status_code=404, detail="project not found")
 
@@ -66,15 +56,24 @@ async def websocket_read_timeout(websocket: WebSocket, timeout=0.1):
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
     await websocket.accept()
-    print(f"{project_id=}")
+    logger.info(f"{project_id=}")
     # жду программу
     while True:
         try:
             message = await websocket_read_timeout(websocket)
         except WebSocketDisconnect:
             return
-        if message is not None and message.get('type') == 'program':
-            code = message.get('data')
+
+        if message is not None and message.get('type') == 'start':
+            logger.info(message)
+            try:
+                code = message.get('data')['editor']
+                logger.info(message.get('data')['param'])
+            except KeyError as e:
+                await websocket.send_json({"wait": False})
+                await websocket.send_json({"stderr": f"{e} not found"})
+                logger.error(e)
+                return
             break
     # сообщение пользователю, что нужно подождать загрузку
     await websocket.send_json({"wait": True})
@@ -88,6 +87,8 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
             project = runner.builder.Z3Project(controller, code)
         case 4:
             project = runner.builder.PythonProject(controller, code)
+        case 5:
+            project = runner.builder.NuSMVroject(controller, code)
         case _:
             raise fastapi.HTTPException(404, detail='project not found')
 
@@ -104,14 +105,14 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
             pass
         # Клиент может отключиться
         except WebSocketDisconnect:
-            print("client disconnect")
+            logger.info("client disconnect")
             project.kill()
             break
 
         if (read := controller.write_websocket()) is not None:
             await websocket.send_json(read)
         if project.stop:
-            print("project finished")
+            logger.info("project finished")
             # дочитываю последние данные
             while (read := controller.write_websocket()) is not None:
                 await websocket.send_json(read)
@@ -119,5 +120,9 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
     del controller
     del project
 
+
 if __name__ == '__main__':
-    uvicorn.run('app:app', host='0.0.0.0', port=8000, reload=True)
+    log_config = uvicorn.config.LOGGING_CONFIG
+    log_config["formatters"]["access"]["fmt"] = "%(asctime)s - %(levelname)s - %(message)s"
+    log_config["formatters"]["default"]["fmt"] = "%(asctime)s - %(levelname)s - %(message)s"
+    uvicorn.run('app:app', host='0.0.0.0', port=8000, reload=True, log_config=log_config)

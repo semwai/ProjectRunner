@@ -1,5 +1,7 @@
 from pydantic import BaseModel  # noqa
 
+from runner.input import UI
+
 
 class GetProjects(BaseModel):
     class Inner(BaseModel):
@@ -15,4 +17,4 @@ class GetProject(BaseModel):
     name: str
     description: str
     lang: str
-    example: str
+    ui: UI
