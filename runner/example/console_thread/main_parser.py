@@ -29,17 +29,17 @@ func main() {
         """
     text = '\n        '.join(text.split('\n'))
     document = f"""
-tasks: 
+tasks:
     - type: File
       name: main.go
-      data: | 
+      data: |
         {text}
     - type: Run
       command: go build main.go
       stdin: false
       stdout: true
     - type: If
-      condition: 
+      condition:
         variable: ExitCode
         c: '!='
         value: 0

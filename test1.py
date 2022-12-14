@@ -8,11 +8,10 @@ project:
     version: 2 # Версия проекта
     description: С language compiler # Краткая информация
     full-description: С language compiler v5.15 # Подробная информация
-    url: 
+    url:
       github: github.com/gcc/gcc
       telegram: tg.me/...
     authors: [John, Alex, Dog]
-    
     input:
         params:
             - optimization:
@@ -25,19 +24,17 @@ project:
                     - O2: standard optimization
             - env_example:
                 name: env
-                description: переменная среды 
+                description: переменная среды
                 type: text
                 destination: env # env или params
                 # set env=$text
-                
             - code: # окно ввода кода
                 name: code editor
                 type: editor
                 lang: c
                 width: 80
-                file: 
-                    name: main.c # в конечном итоге содержимое отправляется под видом файла 
-    
+                file:
+                    name: main.c # в конечном итоге содержимое отправляется под видом файла
 """
 
 scenario = """
@@ -56,7 +53,6 @@ else: # ошибка компиляции, выводим в консоль да
     print(stderr)
     number = parse(stderr) # набросок того, как будет происходить поиск номера ошибочной строки
     code.select(number) # code - id поля ввода файла. Поле ввода указано в паспорте проекта
-    
 """
 
 

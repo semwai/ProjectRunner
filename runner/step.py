@@ -69,4 +69,3 @@ class If(Step):
     condition: Condition
     if_branch: Steps
     else_branch: Steps = Steps([])
-

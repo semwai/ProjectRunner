@@ -47,7 +47,7 @@ tasks:
       stdin: true
       stdout: true
     - type: If
-      condition: 
+      condition:
         variable: ExitCode
         c: '!='
         value: 0
@@ -61,4 +61,3 @@ tasks:
             text: Ok
     """
     print(parse(parse_str(document)['tasks']))
-

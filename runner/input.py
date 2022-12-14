@@ -23,7 +23,7 @@ class Input(BaseModel):
     language: str = None
 
     def dict(self, *args, **kwargs) -> Dict[str, Any]:
-        _ignored = kwargs.pop('exclude_none')
+        _ignored = kwargs.pop('exclude_none') # noqa
         return super().dict(*args, exclude_none=True, **kwargs)
 
 

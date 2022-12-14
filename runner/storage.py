@@ -25,20 +25,20 @@ def ex(name: str) -> str:
 emptyUI = UI(data=[])
 
 goUI = UI(data=[
-    Input(name='editor', description='code input', destination='file', type='code', file='main.go', language='go', default=ex('main.go')),
-    Input(name='param', description='example description', destination='env', type='text', env='param', default='123321'),
+    Input(name='editor', description='code input', destination='file', type='code', file='main.go', language='go', default=ex('main.go')), # noqa
+    Input(name='param', description='example description', destination='env', type='text', env='param', default='123321'), # noqa
 ])
 
 javaUI = UI(data=[
-    Input(name='editor', description='code input', destination='file', type='code', file='Main.java', language='java', default=ex('Main.java')),
+    Input(name='editor', description='code input', destination='file', type='code', file='Main.java', language='java', default=ex('Main.java')), # noqa
 ])
 
 z3UI = UI(data=[
-    Input(name='editor', description='code input', destination='file', type='code', file='main.z3', language='z3', default=ex('main.z3')),
+    Input(name='editor', description='code input', destination='file', type='code', file='main.z3', language='z3', default=ex('main.z3')), # noqa
 ])
 
 pythonUI = UI(data=[
-    Input(name='editor', description='code input', destination='file', type='code', file='main.py', language='python', default=ex('main.py')),
+    Input(name='editor', description='code input', destination='file', type='code', file='main.py', language='python', default=ex('main.py')), # noqa
 ])
 
 projects = Projects(

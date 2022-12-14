@@ -23,4 +23,3 @@ def colored(text: str, color: Literal["HEADER", "OKBLUE", "OKCYAN", "OKGREEN", "
         case "UNDERLINE":
             pre = '\033[4m'
     return f"{pre}{text}\033[0m"
-
