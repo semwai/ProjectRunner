@@ -6,9 +6,9 @@ from starlette.websockets import WebSocketDisconnect # noqa
 import asyncio
 import uvicorn
 
-import runner.builder
+from backend import storage
 from runner.controller import ThreadController
-import runner.storage
+
 from schemas import GetProjects, GetProject
 
 logger = uvicorn.config.logger
@@ -32,13 +32,13 @@ app.add_middleware(
 
 @app.get("/api/projects", response_model=GetProjects, tags=["api"])
 async def get_projects():
-    return runner.storage.projects
+    return storage.projects
 
 
 @app.get("/api/project/{project_id}", response_model=GetProject, tags=["api"])
 async def get_project(project_id: int):
     try:
-        project = [project for project in runner.storage.projects.data if project.id == project_id][0]
+        project = [project for project in storage.projects.data if project.id == project_id][0]
         return project.dict(exclude_none=True)
     except IndexError:
         raise fastapi.HTTPException(status_code=404, detail="project not found")
@@ -78,7 +78,7 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
     await websocket.send_json({"wait": True})
     controller = ThreadController()
     try:
-        project = runner.storage.projectById(project_id)
+        project = storage.projectById(project_id)
         builder = project.builder(controller)
     except Exception as e:
         logger.error(str(e))
