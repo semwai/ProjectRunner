@@ -4,15 +4,18 @@ from runner.input import UI
 
 
 class GetProjects(BaseModel):
-    class Inner(BaseModel):
+    """Получить множество проектов"""
+    class GetProjectsProject(BaseModel):
+        """При получении множества проектов каждый проект будет представлен в кратком формате"""
         id: str
         name: str
         description: str
 
-    data: list[Inner]
+    data: list[GetProjectsProject]
 
 
 class GetProject(BaseModel):
+    """Получить один проект с подробным описанием"""
     id: str
     name: str
     description: str
