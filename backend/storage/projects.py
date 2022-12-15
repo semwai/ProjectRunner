@@ -6,7 +6,7 @@ from backend.runner.container import Container
 from backend.runner.controller import Controller
 from backend.runner.project import Project
 from backend.runner.step import Steps, Print, Run
-from runner.input import UI, Input
+from backend.runner.input import UI, Input
 
 
 def ex(name: str) -> str:
@@ -14,7 +14,7 @@ def ex(name: str) -> str:
     return open(file).read()
 
 
-def GoProject(controller: Controller) -> Project:
+def goScenario(controller: Controller) -> Project:
     project = Project(
         controller,
         Container('golang:alpine'),
@@ -29,7 +29,7 @@ def GoProject(controller: Controller) -> Project:
     return project
 
 
-def JavaProject(controller: Controller) -> Project:
+def javaScenario(controller: Controller) -> Project:
     project = Project(
         controller,
         Container('openjdk:11'),
@@ -47,7 +47,7 @@ def JavaProject(controller: Controller) -> Project:
     return project
 
 
-def Z3Project(controller: Controller) -> Project:
+def Z3Scenario(controller: Controller) -> Project:
     project = Project(
         controller,
         Container('ghcr.io/z3prover/z3:ubuntu-20.04-bare-z3-sha-e3a4425'),
@@ -59,7 +59,7 @@ def Z3Project(controller: Controller) -> Project:
     return project
 
 
-def PythonProject(controller: Controller) -> Project:
+def pythonScenario(controller: Controller) -> Project:
     project = Project(
         controller,
         Container('python:3.10-alpine'),
@@ -71,7 +71,7 @@ def PythonProject(controller: Controller) -> Project:
     return project
 
 
-def NuSMVproject(controller: Controller) -> Project:
+def nusmvScenario(controller: Controller) -> Project:
     project = Project(
         controller,
         Container('semwai/nusmv:2.6.0'),
@@ -109,11 +109,11 @@ nusmvUI = UI(data=[
 
 projects = ProjectsStorage(
     data=[
-        ProjectStorage(id=1, name="Go", description="Golang language compiler", lang="go", ui=goUI, builder=GoProject), # noqa
-        ProjectStorage(id=2, name="Java", description="Java language compiler", lang="java", ui=javaUI, builder=JavaProject), # noqa
-        ProjectStorage(id=3, name="Z3", description="Z3 language", lang="Z3", ui=z3UI, builder=Z3Project), # noqa
-        ProjectStorage(id=4, name="Python", description="Python 3.10", lang="python", ui=pythonUI, builder=PythonProject), # noqa
-        ProjectStorage(id=5, name="nusmv", description="nusmv", lang="nusmv", ui=nusmvUI, builder=NuSMVproject) # noqa
+        ProjectStorage(id=1, name="Go", description="Golang language compiler", lang="go", ui=goUI, builder=goScenario), # noqa
+        ProjectStorage(id=2, name="Java", description="Java language compiler", lang="java", ui=javaUI, builder=javaScenario), # noqa
+        ProjectStorage(id=3, name="Z3", description="Z3 language", lang="Z3", ui=z3UI, builder=Z3Scenario), # noqa
+        ProjectStorage(id=4, name="Python", description="Python 3.10", lang="python", ui=pythonUI, builder=pythonScenario), # noqa
+        ProjectStorage(id=5, name="nusmv", description="nusmv", lang="nusmv", ui=nusmvUI, builder=nusmvScenario) # noqa
     ]
 )
 
