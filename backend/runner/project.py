@@ -1,7 +1,7 @@
 import time
-from runner.container import Container
-from runner.controller import Controller
-from runner.step import File, Run, Print, Steps, If, Condition
+from .container import Container
+from .controller import Controller
+from .step import File, Run, Print, Steps, If, Condition
 
 
 class Project:

@@ -1,9 +1,9 @@
-from runner.container import Container
+from backend.runner.container import Container
 
 
 def main():
     container = Container('python:3.10-alpine')
-    container.add_file('app.py', open('example/console/code.py').read())
+    container.add_file('app.py', open('code.py').read())
     command = container.command('python app.py')
     while (c := input('command:')) != 'exit':
         match c:

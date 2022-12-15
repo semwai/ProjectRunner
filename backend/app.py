@@ -9,7 +9,7 @@ import uvicorn
 import runner.builder
 from runner.controller import ThreadController
 import runner.storage
-from runner.example.web_project.schemas import GetProjects, GetProject
+from schemas import GetProjects, GetProject
 
 logger = uvicorn.config.logger
 

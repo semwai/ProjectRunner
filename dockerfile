@@ -20,7 +20,7 @@ ENV PYTHONPATH="/app/"
 
 RUN pip install -r requirements.txt
 
-WORKDIR /app/runner/example/web_project
+WORKDIR /app/backend
 
 EXPOSE 8000
 

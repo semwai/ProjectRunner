@@ -1,7 +1,7 @@
-from runner.container import Container
-from runner.controller import ThreadConsoleController
-from runner.parser import parse, parse_str
-from runner.project import Project
+from backend.runner.container import Container
+from backend.runner.controller import ThreadConsoleController
+from backend.runner.parser import parse, parse_str
+from backend.runner.project import Project
 
 
 def main():

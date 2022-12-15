@@ -4,8 +4,8 @@ from starlette.websockets import WebSocketDisconnect # noqa
 import asyncio
 import uvicorn
 
-from runner.container import Container
-from runner.controller import ProjectController
+from backend.runner.container import Container
+from backend.runner.controller import ProjectController
 
 app = FastAPI()
 
