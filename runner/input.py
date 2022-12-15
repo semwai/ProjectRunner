@@ -1,6 +1,8 @@
 from typing import Literal, Dict, Any
 from pydantic import BaseModel
 
+from runner.project import Project
+
 
 class Input(BaseModel):
     """Описание графических элементов, которые будут передаваться в запущенный контейнер"""
@@ -30,8 +32,17 @@ class Input(BaseModel):
 class UI(BaseModel):
     data: list[Input]
 
-    # def dict(self) -> dict:
-    #     return {d.name: d.dict() for d in self.data}
+    def parse(self, project: Project, user_input: dict):
+        """Для созданного проекта передаем полученные при start данные пользователя и передаем их в контейнер"""
+        for d in self.data:
+            match d.destination:
+                case "param":
+                    pass
+                case "env":
+                    pass
+                case "file":
+                    project.add_file(d.file, user_input[d.name])
+            # print(f"{d.name}={user_input[d.name]}")
 
 
 if __name__ == '__main__':

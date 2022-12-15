@@ -1,20 +1,26 @@
+from typing import Callable
+
 from pydantic import BaseModel  # noqa
 import pathlib
 
 from runner.input import UI, Input
+import runner.builder as b
+from .project import Project
+from .controller import Controller
 
 
-class Project(BaseModel):
+class ProjectStorage(BaseModel):
     """Модель описания проекта"""
     id: int
     name: str
     description: str
     lang: str
     ui: UI
+    builder: Callable[[Controller], Project]
 
 
-class Projects(BaseModel):
-    data: list[Project]
+class ProjectsStorage(BaseModel):
+    data: list[ProjectStorage]
 
 
 def ex(name: str) -> str:
@@ -41,12 +47,21 @@ pythonUI = UI(data=[
     Input(name='editor', description='code input', destination='file', type='code', file='main.py', language='python', default=ex('main.py')), # noqa
 ])
 
-projects = Projects(
+nusmvUI = UI(data=[
+    Input(name='editor', description='code input', destination='file', type='code', file='main.smv', language='nusmv', default=ex('main.smv')), # noqa
+])
+
+
+projects = ProjectsStorage(
     data=[
-        Project(id=1, name="Go", description="Golang language compiler", lang="go", ui=goUI),
-        Project(id=2, name="Java", description="Java language compiler", lang="java", ui=javaUI),
-        Project(id=3, name="Z3", description="Z3 language", lang="Z3", ui=z3UI),
-        Project(id=4, name="Python", description="Python 3.10", lang="python", ui=pythonUI),
-        Project(id=5, name="nusmv", description="nusmv", lang="nusmv", ui=emptyUI)
+        ProjectStorage(id=1, name="Go", description="Golang language compiler", lang="go", ui=goUI, builder=b.GoProject), # noqa
+        ProjectStorage(id=2, name="Java", description="Java language compiler", lang="java", ui=javaUI, builder=b.JavaProject), # noqa
+        ProjectStorage(id=3, name="Z3", description="Z3 language", lang="Z3", ui=z3UI, builder=b.Z3Project), # noqa
+        ProjectStorage(id=4, name="Python", description="Python 3.10", lang="python", ui=pythonUI, builder=b.PythonProject), # noqa
+        ProjectStorage(id=5, name="nusmv", description="nusmv", lang="nusmv", ui=nusmvUI, builder=b.NuSMVproject) # noqa
     ]
 )
+
+
+def projectById(project_id: int) -> ProjectStorage:
+    return [p for p in projects.data if p.id == project_id][0]

@@ -85,6 +85,9 @@ class Project:
 
                 self.dict['ExitCode'] = None
 
+    def add_file(self, filename: str, data: str):
+        self.container.add_file(filename, data)
+
     def run(self):
         self.queue.extend(self.steps)
         while len(self.queue):

@@ -67,8 +67,7 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
         if message is not None and message.get('type') == 'start':
             logger.info(message)
             try:
-                code = message.get('data')['editor']
-                logger.info(message.get('data')['param'])
+                ui_data = message.get('data')
             except KeyError as e:
                 await websocket.send_json({"wait": False})
                 await websocket.send_json({"stderr": f"{e} not found"})
@@ -78,21 +77,17 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
     # сообщение пользователю, что нужно подождать загрузку
     await websocket.send_json({"wait": True})
     controller = ThreadController()
-    match project_id:
-        case 1:
-            project = runner.builder.GoProject(controller, code)
-        case 2:
-            project = runner.builder.JavaProject(controller, code)
-        case 3:
-            project = runner.builder.Z3Project(controller, code)
-        case 4:
-            project = runner.builder.PythonProject(controller, code)
-        case 5:
-            project = runner.builder.NuSMVroject(controller, code)
-        case _:
-            raise fastapi.HTTPException(404, detail='project not found')
-
-    thread = Thread(target=project.run, daemon=True)
+    try:
+        project = runner.storage.projectById(project_id)
+        builder = project.builder(controller)
+    except Exception as e:
+        logger.error(str(e))
+        raise fastapi.HTTPException(404, detail='project not found')
+    # UI
+    project.ui.parse(builder, ui_data)
+    # builder.add_file('main.go', ui_data['editor'])
+    #
+    thread = Thread(target=builder.run, daemon=True)
     thread.start()
     await websocket.send_json({"wait": False})
     while True:
@@ -106,19 +101,19 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
         # Клиент может отключиться
         except WebSocketDisconnect:
             logger.info("client disconnect")
-            project.kill()
+            builder.kill()
             break
 
         if (read := controller.write_websocket()) is not None:
             await websocket.send_json(read)
-        if project.stop:
+        if builder.stop:
             logger.info("project finished")
             # дочитываю последние данные
             while (read := controller.write_websocket()) is not None:
                 await websocket.send_json(read)
             break
     del controller
-    del project
+    del builder
 
 
 if __name__ == '__main__':
