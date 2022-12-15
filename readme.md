@@ -1,3 +1,5 @@
+[![Python](https://github.com/semwai/ProjectRunner/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/semwai/ProjectRunner/actions/workflows/ci.yml)
+
 ### Clear docker 
 `docker kill $(docker ps -a -q)`\
 `docker rm $(docker ps -a -q)`\
