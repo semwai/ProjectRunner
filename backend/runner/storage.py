@@ -4,7 +4,7 @@ from pydantic import BaseModel  # noqa
 import pathlib
 
 from .input import UI, Input
-from .builder import *
+from .builder import * # noqa
 from .project import Project
 from .controller import Controller
 
