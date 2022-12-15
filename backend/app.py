@@ -70,10 +70,7 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
     except Exception as e:
         logger.error(str(e))
         raise fastapi.HTTPException(404, detail='project not found')
-    # UI
     project.ui.parse(builder, ui_data)
-    # builder.add_file('main.go', ui_data['editor'])
-    #
     thread = Thread(target=builder.run, daemon=True)
     thread.start()
     await websocket.send_json({"wait": False})
