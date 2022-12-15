@@ -3,8 +3,8 @@ from typing import Callable
 from pydantic import BaseModel  # noqa
 import pathlib
 
-from runner.input import UI, Input
-import runner.builder as b
+from .input import UI, Input
+from .builder import *
 from .project import Project
 from .controller import Controller
 
@@ -54,11 +54,11 @@ nusmvUI = UI(data=[
 
 projects = ProjectsStorage(
     data=[
-        ProjectStorage(id=1, name="Go", description="Golang language compiler", lang="go", ui=goUI, builder=b.GoProject), # noqa
-        ProjectStorage(id=2, name="Java", description="Java language compiler", lang="java", ui=javaUI, builder=b.JavaProject), # noqa
-        ProjectStorage(id=3, name="Z3", description="Z3 language", lang="Z3", ui=z3UI, builder=b.Z3Project), # noqa
-        ProjectStorage(id=4, name="Python", description="Python 3.10", lang="python", ui=pythonUI, builder=b.PythonProject), # noqa
-        ProjectStorage(id=5, name="nusmv", description="nusmv", lang="nusmv", ui=nusmvUI, builder=b.NuSMVproject) # noqa
+        ProjectStorage(id=1, name="Go", description="Golang language compiler", lang="go", ui=goUI, builder=GoProject), # noqa
+        ProjectStorage(id=2, name="Java", description="Java language compiler", lang="java", ui=javaUI, builder=JavaProject), # noqa
+        ProjectStorage(id=3, name="Z3", description="Z3 language", lang="Z3", ui=z3UI, builder=Z3Project), # noqa
+        ProjectStorage(id=4, name="Python", description="Python 3.10", lang="python", ui=pythonUI, builder=PythonProject), # noqa
+        ProjectStorage(id=5, name="nusmv", description="nusmv", lang="nusmv", ui=nusmvUI, builder=NuSMVproject) # noqa
     ]
 )
 

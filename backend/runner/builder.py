@@ -1,7 +1,7 @@
-from runner.container import Container
-from runner.controller import Controller
-from runner.project import Project
-from runner.step import Run, Print, Steps
+from .container import Container
+from .controller import Controller
+from .project import Project
+from .step import Run, Print, Steps
 
 
 def GoProject(controller: Controller) -> Project:

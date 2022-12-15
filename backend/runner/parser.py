@@ -1,5 +1,5 @@
 import yaml
-from runner.step import Steps, Print, File, Run, If, Condition
+from .step import Steps, Print, File, Run, If, Condition
 
 
 def parse_str(text: str) -> dict:

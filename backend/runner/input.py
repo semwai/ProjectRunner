@@ -1,7 +1,7 @@
 from typing import Literal, Dict, Any
-from pydantic import BaseModel
+from pydantic import BaseModel # noqa
 
-from runner.project import Project
+from .project import Project
 
 
 class Input(BaseModel):
