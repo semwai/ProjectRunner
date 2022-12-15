@@ -7,9 +7,8 @@ import asyncio
 import uvicorn
 
 from backend import storage
+from backend.crud import api
 from runner.controller import ThreadController
-
-from schemas import GetProjects, GetProject
 
 logger = uvicorn.config.logger
 
@@ -29,19 +28,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-@app.get("/api/projects", response_model=GetProjects, tags=["api"])
-async def get_projects():
-    return storage.projects
-
-
-@app.get("/api/project/{project_id}", response_model=GetProject, tags=["api"])
-async def get_project(project_id: int):
-    try:
-        project = [project for project in storage.projects.data if project.id == project_id][0]
-        return project.dict(exclude_none=True)
-    except IndexError:
-        raise fastapi.HTTPException(status_code=404, detail="project not found")
+app.include_router(api, prefix='/api', tags=['crud'])
 
 
 async def websocket_read_timeout(websocket: WebSocket, timeout=0.1):
