@@ -4,15 +4,20 @@ from pydantic import BaseModel # noqa
 from .project import Project
 
 
+class ListValue(BaseModel):
+    title: str
+    value: str
+
+
 class Input(BaseModel):
     """Описание графических элементов, которые будут передаваться в запущенный контейнер"""
     name: str
     # Описание для пользователя
     description: str
     # Тип параметра, это влияет на отображение элемента в браузере
-    type: Literal["text", "number", "list", "code"]
+    type: Literal["text", "number", "list", "code", "textarea"]
     # Возможные значения для type=list
-    values: list[str] | None = None
+    values: list[ListValue] | None = None
     # Значение по умолчанию
     default: str = None
     # Куда направлять параметр, можно создать таким образом окно ввода текста в дополнительный файл

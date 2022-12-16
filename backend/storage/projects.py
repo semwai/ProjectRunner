@@ -100,6 +100,9 @@ z3UI = UI(data=[
 
 pythonUI = UI(data=[
     Input(name='editor', description='code input', destination='file', type='code', file='main.py', language='python', default=ex('main.py')), # noqa
+    Input(name='data', description='input file', destination='file', type='textarea', file='data.txt', language='txt', default="hello world\n!!!"), # noqa
+    Input(name='list', description='example list element', destination='file', type='list', file='list.txt',
+          values=[{'title': 'One', 'value': '1'}, {'title': 'Two', 'value': '2'}, {'title': 'Three', 'value': '3'}], default='1'), # noqa
 ])
 
 nusmvUI = UI(data=[
