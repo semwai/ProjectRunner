@@ -87,8 +87,8 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
             logger.info("client disconnect")
             builder.kill()
             break
-
-        if (read := controller.write_websocket()) is not None:
+        # Читаем все полученные из контейнера данные и передаем пользователю
+        while (read := controller.write_websocket()) is not None:
             await websocket.send_json(read)
         if builder.stop:
             logger.info("project finished")
