@@ -21,3 +21,7 @@ class GetProject(BaseModel):
     description: str
     lang: str
     ui: UI
+
+
+class User(BaseModel):
+    email: str

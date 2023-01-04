@@ -2,9 +2,12 @@ from threading import Thread
 import fastapi
 from fastapi import FastAPI, WebSocket
 from starlette.middleware.cors import CORSMiddleware # noqa
+from starlette.middleware.sessions import SessionMiddleware # noqa
 from starlette.websockets import WebSocketDisconnect # noqa
+from starlette.requests import Request # noqa
 import asyncio
 import uvicorn
+import os
 
 from backend import storage
 from backend.crud import api
@@ -19,6 +22,8 @@ origins = [
     "http://localhost",
     "http://v1442641.hosted-by-vdsina.ru"
 ]
+
+app.add_middleware(SessionMiddleware, secret_key=os.environ.get('SECRET_KEY'))
 
 app.add_middleware(
     CORSMiddleware,
