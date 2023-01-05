@@ -1,6 +1,5 @@
 from fastapi import HTTPException, Cookie
 from starlette.requests import Request # noqa
-from fastapi import WebSocketDisconnect
 from starlette.websockets import WebSocket
 
 from backend.schemas import User

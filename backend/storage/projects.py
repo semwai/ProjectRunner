@@ -19,7 +19,7 @@ def goScenario(controller: Controller) -> Project:
         controller,
         Container('golang:alpine'),
         program=Steps([
-            Print("Hello user, v0.6.0"),
+            Print("Hello user, 0.7.0"),
             Run('ls -la', stdin=False, stdout=True, ExitCode=False),
             Run('go build main.go', stdin=False, stdout=True, echo=True),
             Run('ls -la', stdin=False, stdout=True, ExitCode=False),
@@ -34,7 +34,7 @@ def javaScenario(controller: Controller) -> Project:
         controller,
         Container('openjdk:11'),
         program=Steps([
-            Print("Hello user, v0.6.0"),
+            Print("Hello user, 0.7.0"),
             Run('javac Main.java', stdin=False, stdout=True, echo=True),
             Steps([
                 Print("1"),
@@ -52,7 +52,7 @@ def Z3Scenario(controller: Controller) -> Project:
         controller,
         Container('ghcr.io/z3prover/z3:ubuntu-20.04-bare-z3-sha-e3a4425'),
         program=Steps([
-            Print("Hello user, v0.6.0", file='stderr'),
+            Print("Hello user, 0.7.0", file='stderr'),
             Run('/app/main.z3', stdin=True, stdout=True, echo=False)
         ])
     )
@@ -64,7 +64,7 @@ def pythonScenario(controller: Controller) -> Project:
         controller,
         Container('python:3.10-alpine'),
         program=Steps([
-            Print("Hello user, v0.6.0", file='stderr'),
+            Print("Hello user, 0.7.0", file='stderr'),
             Run('python main.py', stdin=True, stdout=True, echo=False)
         ])
     )
@@ -76,7 +76,7 @@ def nusmvScenario(controller: Controller) -> Project:
         controller,
         Container('semwai/nusmv:2.6.0'),
         program=Steps([
-            Print("Hello user, v0.6.0", file='stderr'),
+            Print("Hello user, 0.7.0", file='stderr'),
             Run('nusmv /app/main.smv', stdin=True, stdout=True, echo=False)
         ])
     )
