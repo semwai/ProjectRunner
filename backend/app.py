@@ -1,6 +1,6 @@
 from threading import Thread
 import fastapi
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, Depends
 from starlette.middleware.cors import CORSMiddleware # noqa
 from starlette.middleware.sessions import SessionMiddleware # noqa
 from starlette.websockets import WebSocketDisconnect # noqa
@@ -11,9 +11,10 @@ import os
 
 from backend import storage
 from backend.crud import api
+from backend.dependencies import verify_auth_websocket
+from backend.logger import logger
+from backend.schemas import User
 from runner.controller import ThreadController
-
-logger = uvicorn.config.logger
 
 app = FastAPI()
 
@@ -46,7 +47,7 @@ async def websocket_read_timeout(websocket: WebSocket, timeout=0.1):
 
 
 @app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
+async def websocket_endpoint(websocket: WebSocket, project_id: int = 0, user: User = Depends(verify_auth_websocket)):
     await websocket.accept()
     logger.info(f"{project_id=}")
     # жду программу
