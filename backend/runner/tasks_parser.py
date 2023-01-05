@@ -1,8 +1,11 @@
+"""
+Модуль преобразует описание сценария в паспорте в объекты
+"""
 import yaml
-from runner.step import Steps, Print, File, Run, If, Condition
+from .step import Steps, Print, File, Run, If, Condition
 
 
-def parse_str(text: str) -> dict:
+def str_to_yaml(text: str) -> dict:
     doc = yaml.load(text, Loader=yaml.Loader)
     return doc
 
@@ -60,4 +63,4 @@ tasks:
           - type: Print
             text: Ok
     """
-    print(parse(parse_str(document)['tasks']))
+    print(parse(str_to_yaml(document)['tasks']))

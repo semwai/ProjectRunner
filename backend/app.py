@@ -1,17 +1,20 @@
 from threading import Thread
 import fastapi
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, Depends
 from starlette.middleware.cors import CORSMiddleware # noqa
+from starlette.middleware.sessions import SessionMiddleware # noqa
 from starlette.websockets import WebSocketDisconnect # noqa
+from starlette.requests import Request # noqa
 import asyncio
 import uvicorn
+import os
 
-import runner.builder
+from backend import storage
+from backend.crud import api
+from backend.dependencies import verify_auth_websocket
+from backend.logger import logger
+from backend.schemas import User
 from runner.controller import ThreadController
-import runner.storage
-from runner.example.web_project.schemas import GetProjects, GetProject
-
-logger = uvicorn.config.logger
 
 app = FastAPI()
 
@@ -21,6 +24,8 @@ origins = [
     "http://v1442641.hosted-by-vdsina.ru"
 ]
 
+app.add_middleware(SessionMiddleware, secret_key=os.environ.get('SECRET_KEY'))
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -29,19 +34,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-@app.get("/api/projects", response_model=GetProjects, tags=["api"])
-async def get_projects():
-    return runner.storage.projects
-
-
-@app.get("/api/project/{project_id}", response_model=GetProject, tags=["api"])
-async def get_project(project_id: int):
-    try:
-        project = [project for project in runner.storage.projects.data if project.id == project_id][0]
-        return project.dict(exclude_none=True)
-    except IndexError:
-        raise fastapi.HTTPException(status_code=404, detail="project not found")
+app.include_router(api, prefix='/api', tags=['crud'])
 
 
 async def websocket_read_timeout(websocket: WebSocket, timeout=0.1):
@@ -54,7 +47,7 @@ async def websocket_read_timeout(websocket: WebSocket, timeout=0.1):
 
 
 @app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
+async def websocket_endpoint(websocket: WebSocket, project_id: int = 0, user: User = Depends(verify_auth_websocket)):
     await websocket.accept()
     logger.info(f"{project_id=}")
     # жду программу
@@ -67,8 +60,7 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
         if message is not None and message.get('type') == 'start':
             logger.info(message)
             try:
-                code = message.get('data')['editor']
-                logger.info(message.get('data')['param'])
+                ui_data = message.get('data')
             except KeyError as e:
                 await websocket.send_json({"wait": False})
                 await websocket.send_json({"stderr": f"{e} not found"})
@@ -78,21 +70,14 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
     # сообщение пользователю, что нужно подождать загрузку
     await websocket.send_json({"wait": True})
     controller = ThreadController()
-    match project_id:
-        case 1:
-            project = runner.builder.GoProject(controller, code)
-        case 2:
-            project = runner.builder.JavaProject(controller, code)
-        case 3:
-            project = runner.builder.Z3Project(controller, code)
-        case 4:
-            project = runner.builder.PythonProject(controller, code)
-        case 5:
-            project = runner.builder.NuSMVroject(controller, code)
-        case _:
-            raise fastapi.HTTPException(404, detail='project not found')
-
-    thread = Thread(target=project.run, daemon=True)
+    try:
+        project = storage.projectById(project_id)
+        builder = project.builder(controller)
+    except Exception as e:
+        logger.error(str(e))
+        raise fastapi.HTTPException(404, detail='project not found')
+    project.ui.parse(builder, ui_data)
+    thread = Thread(target=builder.run, daemon=True)
     thread.start()
     await websocket.send_json({"wait": False})
     while True:
@@ -106,19 +91,19 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0):
         # Клиент может отключиться
         except WebSocketDisconnect:
             logger.info("client disconnect")
-            project.kill()
+            builder.kill()
             break
-
-        if (read := controller.write_websocket()) is not None:
+        # Читаем все полученные из контейнера данные и передаем пользователю
+        while (read := controller.write_websocket()) is not None:
             await websocket.send_json(read)
-        if project.stop:
+        if builder.stop:
             logger.info("project finished")
             # дочитываю последние данные
             while (read := controller.write_websocket()) is not None:
                 await websocket.send_json(read)
             break
     del controller
-    del project
+    del builder
 
 
 if __name__ == '__main__':

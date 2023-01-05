@@ -1,7 +1,7 @@
-from runner.container import Container
-from runner.controller import ThreadConsoleController
-from runner.parser import parse, parse_str
-from runner.project import Project
+from backend.runner.container import Container
+from backend.runner.controller import ThreadConsoleController
+from backend.runner.tasks_parser import parse, str_to_yaml
+from backend.runner.project import Project
 
 
 def main():
@@ -60,7 +60,7 @@ tasks:
     project = Project(
         controller,
         Container('golang:alpine'),
-        program=parse(parse_str(document)['tasks'])
+        program=parse(str_to_yaml(document)['tasks'])
     )
     controller.run()
     try:

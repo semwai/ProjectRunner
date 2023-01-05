@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 from typing import Literal
-from runner.container import Container
+from .container import Container
 from threading import Thread, Lock
 from queue import Queue
 import select
 import sys
 
-from runner.utils import colored
+from .utils import colored
 
 
 class Controller(ABC):

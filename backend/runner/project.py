@@ -1,7 +1,7 @@
 import time
-from runner.container import Container
-from runner.controller import Controller
-from runner.step import File, Run, Print, Steps, If, Condition
+from .container import Container
+from .controller import Controller
+from .step import File, Run, Print, Steps, If, Condition
 
 
 class Project:
@@ -84,6 +84,9 @@ class Project:
                     self.queue = [*else_branch.steps, *self.queue]
 
                 self.dict['ExitCode'] = None
+
+    def add_file(self, filename: str, data: str):
+        self.container.add_file(filename, data)
 
     def run(self):
         self.queue.extend(self.steps)

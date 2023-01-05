@@ -1,5 +1,12 @@
 from typing import Literal, Dict, Any
-from pydantic import BaseModel
+from pydantic import BaseModel # noqa
+
+from .project import Project
+
+
+class ListValue(BaseModel):
+    title: str
+    value: str
 
 
 class Input(BaseModel):
@@ -8,9 +15,9 @@ class Input(BaseModel):
     # Описание для пользователя
     description: str
     # Тип параметра, это влияет на отображение элемента в браузере
-    type: Literal["text", "number", "list", "code"]
+    type: Literal["text", "number", "list", "code", "textarea"]
     # Возможные значения для type=list
-    values: list[str] | None = None
+    values: list[ListValue] | None = None
     # Значение по умолчанию
     default: str = None
     # Куда направлять параметр, можно создать таким образом окно ввода текста в дополнительный файл
@@ -30,8 +37,17 @@ class Input(BaseModel):
 class UI(BaseModel):
     data: list[Input]
 
-    # def dict(self) -> dict:
-    #     return {d.name: d.dict() for d in self.data}
+    def parse(self, project: Project, user_input: dict):
+        """Для созданного проекта передаем полученные при start данные пользователя и передаем их в контейнер"""
+        for d in self.data:
+            match d.destination:
+                case "param":
+                    pass
+                case "env":
+                    pass
+                case "file":
+                    project.add_file(d.file, user_input[d.name])
+            # print(f"{d.name}={user_input[d.name]}")
 
 
 if __name__ == '__main__':
