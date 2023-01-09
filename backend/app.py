@@ -13,6 +13,8 @@ from backend import storage
 from backend.crud import api
 from backend.dependencies import verify_auth_websocket
 from backend.logger import logger
+from backend.runner.container import Container
+from backend.runner.project import Project
 from backend.schemas import User
 from runner.controller import ThreadController
 
@@ -72,12 +74,12 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0, user: Us
     controller = ThreadController()
     try:
         project = storage.projectById(project_id)
-        builder = project.builder(controller)
+        p = Project(controller, Container(project.container), project.steps)
     except Exception as e:
         logger.error(str(e))
         raise fastapi.HTTPException(404, detail='project not found')
-    project.ui.parse(builder, ui_data)
-    thread = Thread(target=builder.run, daemon=True)
+    project.ui.parse(p, ui_data)
+    thread = Thread(target=p.run, daemon=True)
     thread.start()
     await websocket.send_json({"wait": False})
     while True:
@@ -91,19 +93,19 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0, user: Us
         # Клиент может отключиться
         except WebSocketDisconnect:
             logger.info("client disconnect")
-            builder.kill()
+            p.kill()
             break
         # Читаем все полученные из контейнера данные и передаем пользователю
         while (read := controller.write_websocket()) is not None:
             await websocket.send_json(read)
-        if builder.stop:
+        if p.stop:
             logger.info("project finished")
             # дочитываю последние данные
             while (read := controller.write_websocket()) is not None:
                 await websocket.send_json(read)
             break
     del controller
-    del builder
+    del p
 
 
 if __name__ == '__main__':

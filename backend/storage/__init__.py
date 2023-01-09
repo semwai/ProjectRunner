@@ -1,3 +1,3 @@
-from .projects import Project, ProjectStorage, projectById, projects
+from .projects_from_memory import projectById
 
-__all__ = [Project, ProjectStorage, projectById, projects]
+__all__ = [projectById]

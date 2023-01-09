@@ -1,19 +1,19 @@
-from typing import Callable
 from pydantic import BaseModel # noqa
 
+from backend.runner.step import Steps
 from runner.input import UI
-from runner.project import Project
-from runner.controller import Controller
 
 
 class ProjectStorage(BaseModel):
     """Модель описания проекта"""
     id: int
     name: str
-    description: str
+    short_description: str = ""
+    description: str = ""
     lang: str
+    container: str  # имя docker образа
     ui: UI
-    builder: Callable[[Controller], Project]
+    steps: Steps
 
 
 class ProjectsStorage(BaseModel):
