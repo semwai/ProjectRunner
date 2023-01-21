@@ -1,9 +1,8 @@
 from pydantic import BaseModel  # noqa
 import pathlib
 
-from backend.models import ProjectsStorage, ProjectStorage
-from backend.runner.step import Steps, Print, Run
-from backend.runner.input import UI, Input
+from backend.storage.db import Session
+from backend.storage.models import ProjectStorage, Steps, Print, Run, UI, Input
 
 
 def ex(name: str) -> str:
@@ -11,33 +10,26 @@ def ex(name: str) -> str:
     return open(file).read()
 
 
-goScenario = Steps([
-    Run('ls -la', stdin=False, stdout=True, ExitCode=False),
-    Run('go build main.go', stdin=False, stdout=True, echo=True),
-    Run('ls -la', stdin=False, stdout=True, ExitCode=False),
-    Run('./main', stdin=True, stdout=True, echo=True)])
+goScenario = Steps(data=[
+    Run(command='ls -la', stdin=False, stdout=True, exitCode=False),
+    Run(command='go build main.go', stdin=False, stdout=True, echo=True),
+    Run(command='ls -la', stdin=False, stdout=True, exitCode=False),
+    Run(command='./main', stdin=True, stdout=True, echo=True)])
 
-
-javaScenario = Steps([
-    Run('javac Main.java', stdin=False, stdout=True, echo=True),
-    Steps([
-        Print("1"),
-        Print("2"),
-        Print("3"),
+javaScenario = Steps(data=[
+    Run(command='javac Main.java', stdin=False, stdout=True, echo=True),
+    Steps(data=[
+        Print(text="1"),
+        Print(text="2"),
+        Print(text="3"),
     ]),
-    Run('java Main', stdin=True, stdout=True, echo=True)])
+    Run(command='java Main', stdin=True, stdout=True, echo=True)])
 
-Z3Scenario = Steps([Run('/app/main.z3', stdin=True, stdout=True, echo=False)])
+Z3Scenario = Steps(data=[Run(command='/app/main.z3', stdin=True, stdout=True, echo=False)])
 
-pythonScenario = Steps(
-    [Run('python main.py', stdin=True, stdout=True, echo=False)])
+pythonScenario = Steps(data=[Run(command='python main.py', stdin=True, stdout=True, echo=False)])
 
-
-nusmvScenario = Steps(
-    [Run('nusmv /app/main.smv', stdin=True, stdout=True, echo=False)])
-
-
-emptyUI = UI(data=[])
+nusmvScenario = Steps(data=[Run(command='nusmv /app/main.smv', stdin=True, stdout=True, echo=False)])
 
 goUI = UI(data=[
     Input(name='editor', description='code input', destination='file', type='code', file='main.go', language='go', default=ex('main.go')),  # noqa
@@ -64,16 +56,16 @@ nusmvUI = UI(data=[
 ])
 
 
-projects = ProjectsStorage(
-    data=[
-        ProjectStorage(id=1, name="Go", description="Golang language compiler", lang="go", container="golang:alpine", ui=goUI, steps=goScenario),  # noqa
-        ProjectStorage(id=2, name="Java", description="Java language compiler", lang="java", container="openjdk:11", ui=javaUI, steps=javaScenario),  # noqa
-        ProjectStorage(id=3, name="Z3", description="Z3 language", lang="Z3", container="ghcr.io/z3prover/z3:ubuntu-20.04-bare-z3-sha-e3a4425", ui=z3UI, steps=Z3Scenario),  # noqa
-        ProjectStorage(id=4, name="Python", description="Python 3.10", lang="python", container="python:3.10-alpine", ui=pythonUI, steps=pythonScenario),  # noqa
-        ProjectStorage(id=5, name="nusmv", description="nusmv", lang="nusmv", container="semwai/nusmv:2.6.0", ui=nusmvUI, steps=nusmvScenario)  # noqa
+projects = [
+        ProjectStorage(id=1, name="Go", description="Golang language compiler", lang="go", container="golang:alpine", ui=goUI, scenario=goScenario),  # noqa
+        ProjectStorage(id=2, name="Java", description="Java language compiler", lang="java", container="openjdk:11", ui=javaUI, scenario=javaScenario),  # noqa
+        ProjectStorage(id=3, name="Z3", description="Z3 language", lang="Z3", container="ghcr.io/z3prover/z3:ubuntu-20.04-bare-z3-sha-e3a4425", ui=z3UI, scenario=Z3Scenario),  # noqa
+        ProjectStorage(id=4, name="Python", description="Python 3.10", lang="python", container="python:3.10-alpine", ui=pythonUI, scenario=pythonScenario),  # noqa
+        ProjectStorage(id=5, name="nusmv", version="1", short_description="", description="nusmv", lang="nusmv", container="semwai/nusmv:2.6.0", ui=nusmvUI, scenario=nusmvScenario)  # noqa
     ]
-)
 
-
-def projectById(project_id: int) -> ProjectStorage:
-    return [p for p in projects.data if p.id == project_id][0]
+if __name__ == "__main__":
+    with Session() as db:
+        for p in projects:
+            db.add(p)
+        db.commit()

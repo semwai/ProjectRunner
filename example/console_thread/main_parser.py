@@ -40,7 +40,7 @@ tasks:
       stdout: true
     - type: If
       condition:
-        variable: ExitCode
+        variable: exitCode
         c: '!='
         value: 0
       if_branch:

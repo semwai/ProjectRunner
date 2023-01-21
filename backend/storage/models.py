@@ -1,4 +1,4 @@
-from typing import Dict, Any, Literal
+from typing import Dict, Any, Literal, TypeVar
 
 from sqlalchemy import Column, String, JSON
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
@@ -53,11 +53,6 @@ class Step(BaseModel):
     """Абстрактная команда"""
 
 
-class Steps(Step):
-    """Множество последовательно выполняемых команд"""
-    data: list[Step]
-
-
 class File(Step):
     """Добавление файла"""
 
@@ -69,6 +64,7 @@ class Print(Step):
     """Печать в консоль"""
 
     text: str
+    file: Literal["stdout", "stderr"] = "stdout"
 
 
 class Run(Step):
@@ -80,7 +76,7 @@ class Run(Step):
     # Команда выдает в консоль
     stdout: bool
     # Записывать код возврата
-    ExitCode: bool = True
+    exitCode: bool = True
     # Дублировать команду пользователю для наглядности в stdout
     echo: bool = False
 
@@ -97,8 +93,16 @@ class If(Step):
     """Условное выражение, например если нужно проверить код возврата последней команды и в зависимости от этого
     сделать что-нибудь """
     condition: Condition
-    if_branch: Steps
-    else_branch: Steps
+    if_branch: Step
+    else_branch: Step
+
+
+Self = TypeVar("Self", bound="Steps")
+
+
+class Steps(Step):
+    """Множество последовательно выполняемых команд"""
+    data: list[File | Run | Print | If | Self]
 
 
 class ProjectStorage(Base):
@@ -112,8 +116,27 @@ class ProjectStorage(Base):
     lang: str = Column(String, default="")
     version: str = Column(String, default="1")
     container: Mapped[str]  # имя docker образа
-    ui: UI = Column(JSON)
-    scenario: Steps = Column(JSON)
+    _ui = Column("ui", JSON)
+    _scenario = Column("scenario", JSON)
+
+    @property
+    def ui(self):
+        return UI(**self._ui)
+
+    @property
+    def scenario(self):
+        return Steps(**self._scenario)
+
+    @ui.setter
+    def ui(self, ui: UI):
+        self._ui = ui.dict()
+
+    @scenario.setter
+    def scenario(self, scenario: Steps):
+        self._scenario = scenario.dict()
+
+    def dict(self):
+        return {k.replace('_', ''): getattr(self, k) for k in self.__dict__}
 
 
 if __name__ == "__main__":

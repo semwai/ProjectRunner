@@ -1,5 +1,4 @@
 import os
-import fastapi
 from fastapi import Body, APIRouter, Depends
 from fastapi.exceptions import HTTPException
 from starlette.requests import Request # noqa
@@ -8,7 +7,8 @@ from google.oauth2 import id_token # noqa
 from google.auth.transport import requests # noqa
 from google.auth.exceptions import GoogleAuthError # noqa
 
-from backend import storage
+from backend.storage.db import Session
+from backend.storage.models import ProjectStorage
 from backend.dependencies import verify_auth
 from backend.schemas import GetProjects, GetProject, User
 
@@ -18,16 +18,18 @@ api = APIRouter()
 
 @api.get("/projects", response_model=GetProjects)
 async def get_projects(user: User = Depends(verify_auth)):
-    return storage.projects
+    with Session() as db:
+        data = db.query(ProjectStorage).all()
+        return GetProjects(data=[p.dict() for p in data])
 
 
 @api.get("/project/{project_id}", response_model=GetProject)
 async def get_project(project_id: int, user: User = Depends(verify_auth)):
-    try:
-        project = [project for project in storage.projects.data if project.id == project_id][0]
-        return project.dict(exclude_none=True)
-    except IndexError:
-        raise fastapi.HTTPException(status_code=404, detail="project not found")
+    with Session() as db:
+        project = db.query(ProjectStorage).get(project_id)
+        if project:
+            return GetProject(**project.dict())
+        raise HTTPException(404, "project not found")
 
 
 @api.post("/auth", response_model=User)

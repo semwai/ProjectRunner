@@ -18,7 +18,7 @@ tasks:
       stdout: true
     - type: If
       condition:
-        variable: ExitCode
+        variable: exitCode
         c: '!='
         value: 0
       if_branch:
@@ -34,7 +34,7 @@ tasks:
         Print(text="Hello world"),
         File(name="app.py", data="print(123)"),
         Run(command="python main.py", stdin=True, stdout=True),
-        If(condition=Condition(variable="ExitCode", c="!=", value=0),
+        If(condition=Condition(variable="exitCode", c="!=", value=0),
            if_branch=Steps([
                Print(text="Error"),
            ]),
@@ -43,3 +43,11 @@ tasks:
            ])),
     ]
     assert parse(str_to_yaml(document)['tasks']).steps == steps
+
+# i = UI(data=[
+#         Input(name='optimization', description='level of optimization', type='text'),
+#         Input(name='var', description='example', type='text'),
+#         Input(name='code', description='app', type='code', language='python', destination='file', file='app.py'),
+#     ])
+#
+#     print(i.dict())

@@ -1,7 +1,7 @@
 import time
 from .container import Container
 from .controller import Controller
-from .step import File, Run, Print, Steps, If, Condition
+from backend.storage.models import File, Run, Print, Steps, If
 
 
 class Project:
@@ -9,7 +9,7 @@ class Project:
     отправляются на контроллер """
     def __init__(self, controller: Controller, container: Container, program: Steps):
         self.controller = controller
-        self.steps = program.steps
+        self.steps = program
         self.container = container
         # переменные проекта хранятся тут - код возврата и различные другие параметры
         self.dict = {'stdout': '', 'stderr': ''}
@@ -28,15 +28,18 @@ class Project:
         inst = self.queue.pop(0)
         # print(self.dict)
         match inst:
-            case Print(text, file):
+            case Print():
+                text, file = inst.text, inst.file
                 self.controller.write({file: text + '\n'})
-                self.dict['ExitCode'] = None
+                self.dict['exitCode'] = None
                 self.dict['stdout'] = ''
                 self.dict['stderr'] = ''
-            case File(name, data):
+            case File():
+                name, data = inst.name, inst.data
                 self.container.add_file(name, data)
-                self.dict['ExitCode'] = None
-            case Run(command, read, write, ExitCode, echo):
+                self.dict['exitCode'] = None
+            case Run():
+                command, stdin, stdout, exitCode, echo = inst.command, inst.stdin, inst.stdout, inst.exitCode, inst.echo
                 if echo:
                     self.controller.write({'stdout': command + '\n'})
                 c = self.container.command(command)
@@ -44,32 +47,34 @@ class Project:
                     # если проект завершен извне
                     if self._kill:
                         return
-                    if write:
+                    if stdout:
                         while (data := c.read()) != (None, None):
                             self.controller.write({'stdout': data[0], 'stderr': data[1]})
                             self.append(data)
-                    if read and c.status()['Running']:
+                    if stdin and c.status()['Running']:
                         data = self.controller.read()
                         if data is not None:
                             c.write(data)
                     # небольшая задержка чтобы проект не спрашивал постоянно у контейнера и пользователя данные
                     time.sleep(0.25)
                 # чтение оставшихся данных
-                if write:
+                if stdout:
                     while True:
-                        read = c.read()
-                        if read == ('', ''):
+                        stdin = c.read()
+                        if stdin == ('', ''):
                             break
-                        self.controller.write({'stdout': read[0], 'stderr': read[1]})
-                        self.append(read)
-                if ExitCode:
-                    self.dict['ExitCode'] = c.status()['ExitCode']
+                        self.controller.write({'stdout': stdin[0], 'stderr': stdin[1]})
+                        self.append(stdin)
+                if exitCode:
+                    self.dict['exitCode'] = c.status()['ExitCode']
                 else:
-                    self.dict['ExitCode'] = None
-            case Steps(steps):
-                self.queue = [*steps, *self.queue]
-                self.dict['ExitCode'] = None
-            case If(Condition(variable, c, value), if_branch, else_branch):
+                    self.dict['exitCode'] = None
+            case Steps():
+                data = inst.data
+                self.queue = [*data, *self.queue]
+                self.dict['exitCode'] = None
+            case If():
+                variable, c, value, if_branch, else_branch = inst.condition.variable, inst.condition.c, inst.condition.value, inst.if_branch, inst.else_branch # noqa
                 flag = None
                 match c:
                     case '!=':
@@ -83,17 +88,18 @@ class Project:
                 else:
                     self.queue = [*else_branch.steps, *self.queue]
 
-                self.dict['ExitCode'] = None
+                self.dict['exitCode'] = None
 
     def add_file(self, filename: str, data: str):
         self.container.add_file(filename, data)
 
     def run(self):
+        print(self.steps)
         self.queue.extend(self.steps)
         while len(self.queue):
             self.step()
-            if self.dict['ExitCode'] is not None:
-                self.controller.write({'ExitCode': f"Process finished with exit code {self.dict['ExitCode']}\n"})
+            if self.dict.get('exitCode') is not None:
+                self.controller.write({'exitCode': f"Process finished with exit code {self.dict['exitCode']}\n"})
 
     def kill(self):
         """Закончить выполнение проекта если пользователь закрыл выполнение на своей стороне"""

@@ -1,6 +1,6 @@
 from pydantic import BaseModel  # noqa
 
-from runner.input import UI
+from backend.storage.models import UI, Steps
 
 
 class GetProjects(BaseModel):
@@ -21,6 +21,7 @@ class GetProject(BaseModel):
     description: str
     lang: str
     ui: UI
+    scenario: dict
 
 
 class User(BaseModel):

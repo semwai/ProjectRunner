@@ -16,7 +16,7 @@ class Controller(ABC):
         pass
 
     @abstractmethod
-    def write(self, data: dict[Literal["stdout", "stderr", "ExitCode"]]):
+    def write(self, data: dict[Literal["stdout", "stderr", "exitCode"]]):
         pass
 
 
@@ -25,13 +25,13 @@ class ConsoleController(Controller):
     def read(self) -> str | None:
         return input() + '\n'
 
-    def write(self, data: dict[Literal["stdout", "stderr", "ExitCode"]]):
+    def write(self, data: dict[Literal["stdout", "stderr", "exitCode"]]):
         if (stdout := data.get('stdout')) is not None:
             print(stdout, end='')
         if (stderr := data.get('stderr')) is not None:
             print(stderr, end='')
-        if (ExitCode := data.get('ExitCode')) is not None:
-            print(ExitCode, end='')
+        if (exitCode := data.get('exitCode')) is not None:
+            print(exitCode, end='')
 
 
 class ThreadConsoleController(Controller):
@@ -51,13 +51,13 @@ class ThreadConsoleController(Controller):
             data = self.q.get_nowait()
             return data
 
-    def write(self, data: dict[Literal["stdout", "stderr", "ExitCode"]]):
+    def write(self, data: dict[Literal["stdout", "stderr", "exitCode"]]):
         if (stdout := data.get('stdout')) is not None:
             print(stdout, end='')
         if (stderr := data.get('stderr')) is not None:
             print(colored(stderr, "FAIL"), end='')
-        if (ExitCode := data.get('ExitCode')) is not None:
-            print(colored(ExitCode, "OKBLUE"), end='')
+        if (exitCode := data.get('exitCode')) is not None:
+            print(colored(exitCode, "OKBLUE"), end='')
 
     @staticmethod
     def input_with_timeout(timeout) -> str | None:
@@ -115,7 +115,7 @@ class ThreadController(Controller):
             data = self.container_queue.get_nowait()
             return data
 
-    def write(self, data: dict[Literal["stdout", "stderr", "ExitCode"]]):
+    def write(self, data: dict[Literal["stdout", "stderr", "exitCode"]]):
         self.user_queue.put(data)
 
     def write_websocket(self):
@@ -138,7 +138,7 @@ class ProjectController:
         if self.exec.status()['Running']:
             return self.exec.write(data + "\n")
         else:
-            return self.exec.status()['ExitCode']
+            return self.exec.status()['exitCode']
 
     def read(self):
         try:

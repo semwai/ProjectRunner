@@ -9,13 +9,14 @@ import asyncio
 import uvicorn
 import os
 
-from backend import storage
 from backend.crud import api
 from backend.dependencies import verify_auth_websocket
 from backend.logger import logger
 from backend.runner.container import Container
 from backend.runner.project import Project
 from backend.schemas import User
+from backend.storage.db import Session
+from backend.storage.models import ProjectStorage
 from runner.controller import ThreadController
 
 app = FastAPI()
@@ -73,8 +74,9 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0, user: Us
     await websocket.send_json({"wait": True})
     controller = ThreadController()
     try:
-        project = storage.projectById(project_id)
-        p = Project(controller, Container(project.container), project.steps)
+        with Session() as db:
+            project: ProjectStorage = db.query(ProjectStorage).get(project_id)
+        p = Project(controller, Container(project.container), project.scenario.data)
     except Exception as e:
         logger.error(str(e))
         raise fastapi.HTTPException(404, detail='project not found')

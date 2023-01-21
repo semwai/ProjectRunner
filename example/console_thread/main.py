@@ -35,7 +35,7 @@ func main() {
         program=Steps([
             File('main.go', text),  # Вместо text будет описание источника ввода файла
             Run('go build main.go', stdin=False, stdout=True),
-            If(Condition("ExitCode", "==", 0),
+            If(Condition("exitCode", "==", 0),
                if_branch=Steps([
                    Run('ls -la', stdin=False, stdout=True),
                    Run('./main', stdin=True, stdout=True)
