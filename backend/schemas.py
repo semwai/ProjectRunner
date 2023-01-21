@@ -1,6 +1,6 @@
 from pydantic import BaseModel  # noqa
 
-from backend.storage.models import UI, Steps
+from backend.storage.models import UI
 
 
 class GetProjects(BaseModel):

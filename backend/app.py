@@ -24,7 +24,7 @@ app = FastAPI()
 origins = [
     "http://localhost:3000",
     "http://localhost",
-    "http://v1442641.hosted-by-vdsina.ru"
+    os.environ.get('FRONTEND_URL')
 ]
 
 app.add_middleware(SessionMiddleware, secret_key=os.environ.get('SECRET_KEY'))
