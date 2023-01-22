@@ -1,5 +1,6 @@
 import os
 from fastapi import Body, APIRouter, Depends
+from fastapi.responses import Response
 from fastapi.exceptions import HTTPException
 from starlette.requests import Request # noqa
 
@@ -53,3 +54,9 @@ def check(request: Request, user: User = Depends(verify_auth)):
         return User(email=raw_user['email'])
     else:
         raise HTTPException(400, "Auth failed")
+
+
+@api.get('/logout')
+def logout(request: Request, user: User = Depends(verify_auth)):
+    del request.session['user']
+    return Response()
