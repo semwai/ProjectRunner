@@ -22,8 +22,6 @@ from runner.controller import ThreadController
 app = FastAPI()
 
 origins = [
-    "http://localhost:3000",
-    "http://localhost",
     os.environ.get('FRONTEND_URL')
 ]
 
