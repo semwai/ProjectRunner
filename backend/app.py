@@ -16,7 +16,7 @@ from backend.runner.container import Container
 from backend.runner.project import Project
 from backend.schemas import User
 from backend.storage.db import Session
-from backend.storage.models import ProjectStorage
+from backend.storage import models
 from runner.controller import ThreadController
 
 app = FastAPI()
@@ -73,7 +73,7 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0, user: Us
     controller = ThreadController()
     try:
         with Session() as db:
-            project: ProjectStorage = db.query(ProjectStorage).get(project_id)
+            project: models.Project = db.query(models.Project).get(project_id)
         p = Project(controller, Container(project.container), project.scenario.data)
     except Exception as e:
         logger.error(str(e))

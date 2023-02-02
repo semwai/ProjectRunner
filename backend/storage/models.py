@@ -1,6 +1,6 @@
 from typing import Dict, Any, Literal, TypeVar
 
-from sqlalchemy import Column, String, JSON
+from sqlalchemy import Column, String, JSON, Enum
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
 from pydantic import BaseModel # noqa
 
@@ -105,7 +105,7 @@ class Steps(Step):
     data: list[File | Run | Print | If | Self]
 
 
-class ProjectStorage(Base):
+class Project(Base):
     """Модель описания проекта"""
     __tablename__ = "project"
 
@@ -137,6 +137,16 @@ class ProjectStorage(Base):
 
     def dict(self):
         return {k.replace('_', ''): getattr(self, k) for k in self.__dict__}
+
+
+class User(Base):
+    """Модель описания пользователя"""
+    __tablename__ = "user"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: str = Column(String, default="")
+    email: str = Column(String, default="")
+    access: Literal["user", "admin"] = Column(Enum("user", "admin", name='Access'), default="user")
 
 
 if __name__ == "__main__":

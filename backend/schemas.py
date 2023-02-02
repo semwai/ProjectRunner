@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel  # noqa
 
 from backend.storage.models import UI
@@ -21,8 +23,9 @@ class GetProject(BaseModel):
     description: str
     lang: str
     ui: UI
-    scenario: dict
 
 
 class User(BaseModel):
     email: str
+    name: str
+    access: Literal["user", "admin"]

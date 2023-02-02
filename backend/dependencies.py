@@ -8,7 +8,7 @@ from backend.schemas import User
 def verify_auth(request: Request) -> User:
     raw_user = request.session.get('user')
     if raw_user:
-        return User(email=raw_user['email'])
+        return User(email=raw_user['email'], name=raw_user["name"], access=raw_user["access"])
     else:
         raise HTTPException(400, "Auth failed")
 
