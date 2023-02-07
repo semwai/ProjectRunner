@@ -47,6 +47,7 @@ z3UI = UI(data=[
 pythonUI = UI(data=[
     Input(name='editor', description='code input', destination='file', type='code', file='main.py', language='python', default=ex('main.py')),  # noqa
     Input(name='data', description='input file', destination='file', type='textarea', file='data.txt', language='txt', default="hello world\n!!!"),  # noqa
+    Input(name='file_str', description='input file', destination='file', type='file', file='file.txt', language='txt'),  # noqa
     Input(name='list', description='example list element', destination='file', type='list', file='list.txt',
           values=[{'title': 'One', 'value': '1'}, {'title': 'Two', 'value': '2'}, {'title': 'Three', 'value': '3'}], default='1'),  # noqa
 ])
@@ -55,13 +56,23 @@ nusmvUI = UI(data=[
     Input(name='editor', description='code input', destination='file', type='code', file='main.smv', language='nusmv', default=ex('main.smv')),  # noqa
 ])
 
-
+goMDdesc = """
+# Go language
+- 1
+- 2
+- 3
+```go
+func go() int {
+    return 0
+}
+```
+"""
 projects = [
-        Project(id=1, name="Go", description="Golang language compiler", lang="go", container="golang:alpine", ui=goUI, scenario=goScenario),  # noqa
-        Project(id=2, name="Java", description="Java language compiler", lang="java", container="openjdk:11", ui=javaUI, scenario=javaScenario),  # noqa
-        Project(id=3, name="Z3", description="Z3 language", lang="Z3", container="ghcr.io/z3prover/z3:ubuntu-20.04-bare-z3-sha-e3a4425", ui=z3UI, scenario=Z3Scenario),  # noqa
-        Project(id=4, name="Python", description="Python 3.10", lang="python", container="python:3.10-alpine", ui=pythonUI, scenario=pythonScenario),  # noqa
-        Project(id=5, name="nusmv", version="1", short_description="", description="nusmv", lang="nusmv", container="semwai/nusmv:2.6.0", ui=nusmvUI, scenario=nusmvScenario)  # noqa
+        Project(id=1, name="Go", description=goMDdesc, container="golang:alpine", ui=goUI, scenario=goScenario),  # noqa
+        Project(id=2, name="Java", description="Java language compiler", container="openjdk:11", ui=javaUI, scenario=javaScenario),  # noqa
+        Project(id=3, name="Z3", description="Z3 language", container="ghcr.io/z3prover/z3:ubuntu-20.04-bare-z3-sha-e3a4425", ui=z3UI, scenario=Z3Scenario),  # noqa
+        Project(id=4, name="Python", description="Python 3.10", container="python:3.10-alpine", ui=pythonUI, scenario=pythonScenario),  # noqa
+        Project(id=5, name="nusmv", version="1", short_description="short description", description="nusmv", container="semwai/nusmv:2.6.0", ui=nusmvUI, scenario=nusmvScenario)  # noqa
     ]
 
 if __name__ == "__main__":

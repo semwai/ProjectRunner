@@ -1,6 +1,6 @@
 from typing import Dict, Any, Literal, TypeVar
 
-from sqlalchemy import Column, String, JSON, Enum
+from sqlalchemy import Column, String, JSON, Enum, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
 from pydantic import BaseModel # noqa
 
@@ -20,7 +20,7 @@ class Input(BaseModel):
 
     name: str
     description: str
-    type: Literal["text", "number", "list", "code", "textarea"]
+    type: Literal["text", "number", "list", "code", "textarea", "file"]
     values: list[ListValue] = []
     default: str = ""
     destination: Literal["param", "env", "file"]
@@ -113,9 +113,9 @@ class Project(Base):
     name: str = Column(String, default="")
     short_description: str = Column(String, default="")
     description: str = Column(String, default="")
-    lang: str = Column(String, default="")
     version: str = Column(String, default="1")
     container: Mapped[str]  # имя docker образа
+    visible: bool = Column(Boolean, default=False)  # Виден ли проект для обычных пользователей
     _ui = Column("ui", JSON)
     _scenario = Column("scenario", JSON)
 

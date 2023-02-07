@@ -10,8 +10,11 @@ class GetProjects(BaseModel):
     class GetProjectsProject(BaseModel):
         """При получении множества проектов каждый проект будет представлен в кратком формате"""
         id: str
-        name: str
-        description: str
+        name: str = ""
+        description: str = ""
+        short_description: str = ""
+        version: str = ""
+        visible: bool = False
 
     data: list[GetProjectsProject]
 
@@ -21,7 +24,9 @@ class GetProject(BaseModel):
     id: str
     name: str
     description: str
-    lang: str
+    short_description: str
+    version: str
+    visible: bool
     ui: UI
 
 
