@@ -2,7 +2,7 @@ from typing import Dict, Any, Literal, TypeVar
 
 from sqlalchemy import Column, String, JSON, Enum, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
-from pydantic import BaseModel # noqa
+from pydantic import BaseModel, root_validator, validator  # noqa
 
 from backend.storage.db import engine
 
@@ -51,6 +51,12 @@ class UI(BaseModel):
 
 class Step(BaseModel):
     """Абстрактная команда"""
+
+    def dict(self, *args, **kwargs):
+        # таким образом получаем имя класса при преобразовании в json, что удобно для фронта
+        result = super().dict(*args, **kwargs)
+        result["type"] = self.__class__.__name__
+        return result
 
 
 class File(Step):
@@ -136,7 +142,17 @@ class Project(Base):
         self._scenario = scenario.dict()
 
     def dict(self):
-        return {k.replace('_', ''): getattr(self, k) for k in self.__dict__}
+        return {
+            'id': self.id,
+            'name': self.name,
+            'short_description': self.short_description,
+            'description': self.description,
+            'version': self.version,
+            'container': self.container,
+            'visible': self.visible,
+            'ui': self._ui,
+            'scenario': self.scenario.dict()
+        }
 
 
 class User(Base):

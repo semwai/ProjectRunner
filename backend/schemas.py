@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel  # noqa
 
-from backend.storage.models import UI
+from backend.storage.models import UI, Steps
 
 
 class GetProjects(BaseModel):
@@ -22,12 +22,13 @@ class GetProjects(BaseModel):
 class GetProject(BaseModel):
     """Получить один проект с подробным описанием"""
     id: str
-    name: str
-    description: str
-    short_description: str
-    version: str
-    visible: bool
+    name: str = ""
+    description: str = ""
+    short_description: str = ""
+    version: str = ""
+    visible: bool = False
     ui: UI
+    scenario: Steps
 
 
 class User(BaseModel):
