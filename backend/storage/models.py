@@ -51,12 +51,13 @@ class UI(BaseModel):
 
 class Step(BaseModel):
     """Абстрактная команда"""
+    type: str
 
-    def dict(self, *args, **kwargs):
+    @root_validator(pre=True)
+    def set_creature_type(cls, values):
         # таким образом получаем имя класса при преобразовании в json, что удобно для фронта
-        result = super().dict(*args, **kwargs)
-        result["type"] = self.__class__.__name__
-        return result
+        values['type'] = cls.__name__
+        return values
 
 
 class File(Step):
