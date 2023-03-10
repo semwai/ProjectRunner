@@ -13,7 +13,7 @@ from backend.crud import api
 from backend.dependencies import verify_auth_websocket
 from backend.logger import logger
 from backend.runner.container import Container
-from backend.runner.project import Project
+from backend.runner.page import Page
 from backend.schemas import User
 from backend.storage.db import Session
 from backend.storage import models
@@ -73,8 +73,8 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0, user: Us
     controller = ThreadController()
     try:
         with Session() as db:
-            project: models.Project = db.query(models.Project).get(project_id)
-        p = Project(controller, Container(project.container), project.scenario.data)
+            project: models.Page = db.query(models.Page).get(project_id)
+        p = Page(controller, Container(project.container), project.scenario.data)
     except Exception as e:
         logger.error(str(e))
         raise fastapi.HTTPException(404, detail='project not found')

@@ -4,7 +4,7 @@ from .controller import Controller
 from backend.storage.models import File, Run, Print, Steps, If
 
 
-class Project:
+class Page:
     """Проект принимает последовательность команд, которые выполняет согласно сценарию. Данные получаются и
     отправляются на контроллер """
     def __init__(self, controller: Controller, container: Container, program: Steps):

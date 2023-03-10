@@ -5,9 +5,9 @@ from pydantic import BaseModel  # noqa
 from backend.storage.models import UI, Steps
 
 
-class GetProjects(BaseModel):
+class GetPages(BaseModel):
     """Получить множество проектов"""
-    class GetProjectsProject(BaseModel):
+    class GetShortPages(BaseModel):
         """При получении множества проектов каждый проект будет представлен в кратком формате"""
         id: str
         name: str = ""
@@ -16,10 +16,10 @@ class GetProjects(BaseModel):
         version: str = ""
         visible: bool = False
 
-    data: list[GetProjectsProject]
+    data: list[GetShortPages]
 
 
-class GetProject(BaseModel):
+class GetPage(BaseModel):
     """Получить один проект с подробным описанием"""
     id: str
     name: str = ""

@@ -11,25 +11,25 @@ from google.auth.exceptions import GoogleAuthError # noqa
 from backend.storage.db import Session
 from backend.storage import models
 from backend.dependencies import verify_auth
-from backend.schemas import GetProjects, GetProject, User
+from backend.schemas import GetPages, GetPage, User
 
 
 api = APIRouter()
 
 
-@api.get("/projects", response_model=GetProjects)
-async def get_projects(user: User = Depends(verify_auth)):
+@api.get("/pages", response_model=GetPages)
+async def get_pages(user: User = Depends(verify_auth)):
     with Session() as db:
-        data = db.query(models.Project).all()
-        return GetProjects(data=[p.dict() for p in data])
+        data = db.query(models.Page).all()
+        return GetPages(data=[p.dict() for p in data])
 
 
-@api.get("/project/{project_id}", response_model=GetProject)
-async def get_project(project_id: int, user: User = Depends(verify_auth)):
+@api.get("/page/{page_id}", response_model=GetPage)
+async def get_page(page_id: int, user: User = Depends(verify_auth)):
     with Session() as db:
-        project = db.query(models.Project).get(project_id)
+        project = db.query(models.Page).get(page_id)
         if project:
-            return GetProject(**project.dict())
+            return GetPage(**project.dict())
         raise HTTPException(404, "project not found")
 
 

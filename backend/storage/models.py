@@ -112,9 +112,9 @@ class Steps(Step):
     data: list[File | Run | Print | If | Self]
 
 
-class Project(Base):
+class Page(Base):
     """Модель описания проекта"""
-    __tablename__ = "project"
+    __tablename__ = "page"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: str = Column(String, default="")

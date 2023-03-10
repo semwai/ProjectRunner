@@ -1,6 +1,6 @@
 from backend.runner.container import Container
 from backend.runner.controller import ThreadConsoleController
-from backend.runner.project import Project
+from backend.runner.project import Page
 from backend.runner.step import File, Run, Steps, If, Condition, Print
 
 
@@ -29,7 +29,7 @@ func main() {
 }
         """
     controller = ThreadConsoleController()
-    project = Project(
+    project = Page(
         controller,
         Container('golang:alpine'),
         program=Steps([
