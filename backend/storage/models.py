@@ -166,6 +166,44 @@ class User(Base):
     access: Literal["user", "admin"] = Column(Enum("user", "admin", name='Access'), default="user")
 
 
+class Entry(BaseModel):
+    id: int
+    short_description: str
+
+
+_Content = TypeVar("_Content", bound="Content")
+
+
+class Content(BaseModel):
+    """Дерево оглавления"""
+    data: list[Entry | _Content]
+
+
+class Project(Base):
+    __tablename__ = "project"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: str = Column(String, default="")
+    description: str = Column(String, default="")
+    _content = Column("content", JSON)
+
+    @property
+    def content(self):
+        return Content(**self._content)
+
+    @content.setter
+    def content(self, content: UI):
+        self._content = content.dict()
+
+    def dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'content': self.content.dict()
+        }
+
+
 if __name__ == "__main__":
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)

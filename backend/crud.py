@@ -11,8 +11,7 @@ from google.auth.exceptions import GoogleAuthError # noqa
 from backend.storage.db import Session
 from backend.storage import models
 from backend.dependencies import verify_auth
-from backend.schemas import GetPages, GetPage, User
-
+from backend.schemas import GetPages, GetPage, User, GetProject
 
 api = APIRouter()
 
@@ -27,10 +26,27 @@ async def get_pages(user: User = Depends(verify_auth)):
 @api.get("/page/{page_id}", response_model=GetPage)
 async def get_page(page_id: int, user: User = Depends(verify_auth)):
     with Session() as db:
-        project = db.query(models.Page).get(page_id)
+        page = db.query(models.Page).get(page_id)
+        if page:
+            return GetPage(**page.dict())
+        raise HTTPException(404, "page not found")
+
+
+@api.get("/project/{project_id}", response_model=GetProject)
+async def get_project(project_id: int, user: User = Depends(verify_auth)):
+    with Session() as db:
+        project = db.query(models.Project).get(project_id)
         if project:
-            return GetPage(**project.dict())
+            print(project.dict())
+            return GetProject(**project.dict())
         raise HTTPException(404, "project not found")
+
+
+@api.get("/projects", response_model=list[GetProject])
+async def get_projects(user: User = Depends(verify_auth)):
+    with Session() as db:
+        data = db.query(models.Project).all()
+        return [p.dict() for p in data]
 
 
 @api.post("/auth", response_model=User)
