@@ -176,7 +176,19 @@ _Content = TypeVar("_Content", bound="Content")
 
 class Content(BaseModel):
     """Дерево оглавления"""
+
+    description: str = ""  # название главы
     data: list[Entry | _Content]
+
+    def Ids(self) -> set[int]:
+        """Все ID страниц"""
+        out = set()
+        for d in self.data:
+            if type(d) == Entry:
+                out.add(d.id)
+            if type(d) == Content:
+                out.union(d.Ids())
+        return out
 
 
 class Project(Base):
@@ -192,7 +204,7 @@ class Project(Base):
         return Content(**self._content)
 
     @content.setter
-    def content(self, content: UI):
+    def content(self, content: Content):
         self._content = content.dict()
 
     def dict(self):

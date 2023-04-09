@@ -42,3 +42,11 @@ class GetProject(BaseModel):
     name: str = ""
     description: str = ""
     content: Content
+
+
+class GetFullProject(BaseModel):
+    id: int
+    name: str = ""
+    description: str = ""
+    content: Content
+    pages: list[GetPage]
