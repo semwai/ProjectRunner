@@ -89,9 +89,9 @@ pages = [
 ]
 
 projects = [
-    Project(id=1, name="Первый проект", description="Описание первого проекта", content=Content(
+    Project(name="Первый проект", description="Описание первого проекта", content=Content(
         data=[Entry(id=4, short_description="Python 3.10"), Entry(id=5, short_description="nusmw")])),  # noqa
-    Project(id=2, name="Второй проект со всеми страницами", description="Описание второго проекта",
+    Project(name="Второй проект со всеми страницами", description="Описание второго проекта",
             content=Content(
                 data=[
                     Entry(id=3, short_description="z3"),
@@ -108,7 +108,7 @@ projects = [
                                   ]),
                     Entry(id=4, short_description="Python 3.10"),
                     Entry(id=5, short_description="nusmw")])),
-    Project(id=3, name="Go book", description="Интерактивная книга по языку GO",
+    Project(name="Go book", description="Интерактивная книга по языку GO",
             content=Content(
                 description="Оглавление",
                 data=[
@@ -141,5 +141,5 @@ if __name__ == "__main__":
             db.add(p)
         for p in pages:
             db.add(p)
-        db.add(User(id=1, name='semwai', email='e14s@mail.ru', access='admin'))
+        db.add(User(name='semwai', email='e14s@mail.ru', access='admin'))
         db.commit()
