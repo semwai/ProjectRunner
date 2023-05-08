@@ -2,7 +2,7 @@ from pydantic import BaseModel  # noqa
 import pathlib
 
 from backend.storage.db import Session
-from backend.storage.models import Page, Steps, Print, Run, UI, Input, Project, Content, Entry
+from backend.storage.models import Page, Steps, Print, Run, UI, Input, Project, Content, Entry, User
 
 
 def ex(name: str) -> str:
@@ -77,14 +77,14 @@ func go() int {
 ```
 """
 pages = [
-    Page(id=1, name="Go", description=goMDdesc, container="golang:alpine", ui=goUI, scenario=goScenario),  # noqa
-    Page(id=2, name="Java", description="Java language compiler", container="openjdk:11", ui=javaUI,
+    Page(short_description="go example", name="Go", description=goMDdesc, container="golang:alpine", ui=goUI, scenario=goScenario),  # noqa
+    Page(short_description="java example",name="Java", description="Java language compiler", container="openjdk:11", ui=javaUI,
          scenario=javaScenario),  # noqa
-    Page(id=3, name="Z3", description="Z3 language", container="ghcr.io/z3prover/z3:ubuntu-20.04-bare-z3-sha-e3a4425",
+    Page(short_description="z3 example", name="Z3", description="Z3 language", container="ghcr.io/z3prover/z3:ubuntu-20.04-bare-z3-sha-e3a4425",
          ui=z3UI, scenario=Z3Scenario),  # noqa
-    Page(id=4, name="Python", description="Python 3.10", container="python:3.10-alpine", ui=pythonUI,
+    Page(short_description="python example",name="Python", description="Python 3.10", container="python:3.10-alpine", ui=pythonUI,
          scenario=pythonScenario),  # noqa
-    Page(id=5, name="nusmv", version="1", short_description="short description", description="nusmv",
+    Page(short_description="nusmv example",name="nusmv", version="1", description="nusmv",
          container="semwai/nusmv:2.6.0", ui=nusmvUI, scenario=nusmvScenario)  # noqa
 ]
 
@@ -141,4 +141,5 @@ if __name__ == "__main__":
             db.add(p)
         for p in pages:
             db.add(p)
+        db.add(User(id=1, name='semwai', email='e14s@mail.ru', access='admin'))
         db.commit()
