@@ -116,9 +116,9 @@ class Page(Base):
     """Модель описания проекта"""
     __tablename__ = "page"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: str = Column(String, default="")
-    short_description: str = Column(String, default="")
+    short_description: str = Column(String, unique=True)
     description: str = Column(String, default="")
     version: str = Column(String, default="1")
     container: Mapped[str]  # имя docker образа
@@ -197,6 +197,7 @@ class Project(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: str = Column(String, default="")
     description: str = Column(String, default="")
+    public: bool = Column(Boolean, default=False)
     _content = Column("content", JSON)
 
     @property

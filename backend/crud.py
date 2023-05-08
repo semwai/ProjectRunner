@@ -1,7 +1,9 @@
 import os
+
 from fastapi import Body, APIRouter, Depends
 from fastapi.responses import Response
 from fastapi.exceptions import HTTPException
+from sqlalchemy.exc import IntegrityError
 from starlette.requests import Request # noqa
 
 from google.oauth2 import id_token # noqa
@@ -41,10 +43,25 @@ async def post_page(page: GetPage, user: User = Depends(verify_auth)):
         if page.id == 0:
             # create new
             new_page = models.Page(description=page.description, version=page.version, visible=False, name=page.name, container="", short_description=page.short_description, scenario=page.scenario, ui=page.ui)
-            db.add(new_page)
-            print(new_page)
-            db.commit()
+            try:
+                db.add(new_page)
+                db.commit()
+            except IntegrityError:
+                raise HTTPException(400, "page with this short description already exists")
         return page
+
+
+@api.delete("/page")
+async def delete_page(id: int, user: User = Depends(verify_auth)):
+    if user.access != 'admin':
+        raise HTTPException(403, "user")
+    with Session() as db:
+        page = db.query(models.Page).get(id)
+        if page:
+            db.delete(page)
+            db.commit()
+            return 1
+        raise HTTPException(404, "page not found")
 
 
 @api.get("/project/{project_id}", response_model=GetProject)
