@@ -213,6 +213,7 @@ class Project(Base):
             'id': self.id,
             'name': self.name,
             'description': self.description,
+            'public': self.public,
             'content': self.content.dict()
         }
 
