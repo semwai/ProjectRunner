@@ -44,7 +44,7 @@ class UI(BaseModel):
                 case "param":
                     pass
                 case "env":
-                    pass
+                    project.add_environment(d.env, user_input[d.name])
                 case "file":
                     project.add_file(d.file, user_input[d.name])
 

@@ -93,6 +93,9 @@ class Page:
     def add_file(self, filename: str, data: str):
         self.container.add_file(filename, data)
 
+    def add_environment(self, name: str, value: str):
+        self.container.add_environment(name, value)
+
     def run(self):
         print(self.steps)
         self.queue.extend(self.steps)

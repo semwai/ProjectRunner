@@ -77,6 +77,8 @@ class Container:
         )
         # Созданные контейнеры
         self.containers = [self.container]
+        # Переданные параметры среды
+        self.environment = {}
 
     @staticmethod
     def _make_archive(filename: str, data: bytes):
@@ -96,10 +98,15 @@ class Container:
         tarstream = self._make_archive(filename, data.encode('utf-8'))
         client.api.put_archive(self.container.id, '/app', tarstream)
 
+    def add_environment(self, name: str, value: str) -> None:
+        """Загрузка переменной среды в контейнер"""
+        self.environment[name] = value
+
     def command(self, command) -> Command:
         """Выполнить команду, аналог docker exec"""
         container = client.containers.create(
             self.image,
+            environment=self.environment,
             command=command,
             working_dir='/app',
             volumes=[f'{self.volume.id}:/app'],
