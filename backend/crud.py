@@ -90,6 +90,19 @@ async def get_project(project_id: int, user: User = Depends(verify_auth)):
         raise HTTPException(404, "project not found")
 
 
+@api.delete("/project")
+async def delete_project(id: int, user: User = Depends(verify_auth)):
+    if user.access != 'admin':
+        raise HTTPException(403, "user")
+    with Session() as db:
+        project = db.query(models.Project).get(id)
+        if project:
+            db.delete(project)
+            db.commit()
+            return 1
+        raise HTTPException(404, "project not found")
+
+
 @api.get("/project/{project_id}/json", response_model=GetFullProject)
 async def get_project(project_id: int, user: User = Depends(verify_auth)):
     with Session() as db:
