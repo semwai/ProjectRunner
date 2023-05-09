@@ -1,7 +1,7 @@
 from backend.runner.container import Container
 from backend.runner.controller import ThreadConsoleController
 from backend.runner.tasks_parser import parse, str_to_yaml
-from backend.runner.project import Project
+from backend.runner.project import Page
 
 
 def main():
@@ -40,7 +40,7 @@ tasks:
       stdout: true
     - type: If
       condition:
-        variable: ExitCode
+        variable: exitCode
         c: '!='
         value: 0
       if_branch:
@@ -57,7 +57,7 @@ tasks:
             stdout: true
     """
     controller = ThreadConsoleController()
-    project = Project(
+    project = Page(
         controller,
         Container('golang:alpine'),
         program=parse(str_to_yaml(document)['tasks'])

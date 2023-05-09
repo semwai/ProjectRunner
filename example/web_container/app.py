@@ -53,7 +53,7 @@ async def websocket_endpoint(websocket: WebSocket):
         # Если выполнение завершено, то вывести код результата
         status = run_model.status()
         if not status['Running']:
-            await websocket.send_json({'exit': f"Process finished with exit code {status['ExitCode']}"})
+            await websocket.send_json({'exit': f"Process finished with exit code {status['exitCode']}"})
             run_model = None
 
 

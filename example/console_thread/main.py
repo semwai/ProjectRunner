@@ -1,6 +1,6 @@
 from backend.runner.container import Container
 from backend.runner.controller import ThreadConsoleController
-from backend.runner.project import Project
+from backend.runner.project import Page
 from backend.runner.step import File, Run, Steps, If, Condition, Print
 
 
@@ -29,13 +29,13 @@ func main() {
 }
         """
     controller = ThreadConsoleController()
-    project = Project(
+    project = Page(
         controller,
         Container('golang:alpine'),
         program=Steps([
             File('main.go', text),  # Вместо text будет описание источника ввода файла
             Run('go build main.go', stdin=False, stdout=True),
-            If(Condition("ExitCode", "==", 0),
+            If(Condition("exitCode", "==", 0),
                if_branch=Steps([
                    Run('ls -la', stdin=False, stdout=True),
                    Run('./main', stdin=True, stdout=True)

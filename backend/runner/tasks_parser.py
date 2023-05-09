@@ -2,7 +2,7 @@
 Модуль преобразует описание сценария в паспорте в объекты
 """
 import yaml
-from .step import Steps, Print, File, Run, If, Condition
+from backend.storage.models import Steps, Print, File, Run, If, Condition
 
 
 def str_to_yaml(text: str) -> dict:
@@ -12,17 +12,17 @@ def str_to_yaml(text: str) -> dict:
 
 def parse(config: dict):
 
-    program = Steps([])
+    program = Steps(data=[])
 
     for step in config:
         match (step['type']):
             case 'Print':
-                program.steps.append(Print(step.get('text'), step.get('file')))
+                program.data.append(Print(text=step.get('text'), file=step.get('file')))
             case 'File':
-                program.steps.append(File(step.get('name'), step.get('data')))
+                program.data.append(File(text=step.get('name'), file=step.get('data')))
             case 'Run':
-                program.steps.append(Run(
-                    step.get('command'), step.get('stdin'), step.get('stdout'), step.get('ExitCode'), step.get('echo')))
+                program.data.append(Run(
+                    step.get('command'), step.get('stdin'), step.get('stdout'), step.get('exitCode'), step.get('echo')))
             case 'If':
                 cond = step.get('condition')
                 _if = step.get('if_branch')
@@ -51,7 +51,7 @@ tasks:
       stdout: true
     - type: If
       condition:
-        variable: ExitCode
+        variable: exitCode
         c: '!='
         value: 0
       if_branch:

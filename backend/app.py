@@ -9,19 +9,20 @@ import asyncio
 import uvicorn
 import os
 
-from backend import storage
 from backend.crud import api
 from backend.dependencies import verify_auth_websocket
 from backend.logger import logger
+from backend.runner.container import Container
+from backend.runner.page import Page
 from backend.schemas import User
+from backend.storage.db import Session
+from backend.storage import models
 from runner.controller import ThreadController
 
 app = FastAPI()
 
 origins = [
-    "http://localhost:3000",
-    "http://localhost",
-    "http://v1442641.hosted-by-vdsina.ru"
+    os.environ.get('FRONTEND_URL')
 ]
 
 app.add_middleware(SessionMiddleware, secret_key=os.environ.get('SECRET_KEY'))
@@ -71,13 +72,14 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0, user: Us
     await websocket.send_json({"wait": True})
     controller = ThreadController()
     try:
-        project = storage.projectById(project_id)
-        builder = project.builder(controller)
+        with Session() as db:
+            project: models.Page = db.query(models.Page).get(project_id)
+        p = Page(controller, Container(project.container), project.scenario.data)
     except Exception as e:
         logger.error(str(e))
         raise fastapi.HTTPException(404, detail='project not found')
-    project.ui.parse(builder, ui_data)
-    thread = Thread(target=builder.run, daemon=True)
+    project.ui.parse(p, ui_data)
+    thread = Thread(target=p.run, daemon=True)
     thread.start()
     await websocket.send_json({"wait": False})
     while True:
@@ -91,19 +93,19 @@ async def websocket_endpoint(websocket: WebSocket, project_id: int = 0, user: Us
         # Клиент может отключиться
         except WebSocketDisconnect:
             logger.info("client disconnect")
-            builder.kill()
+            p.kill()
             break
         # Читаем все полученные из контейнера данные и передаем пользователю
         while (read := controller.write_websocket()) is not None:
             await websocket.send_json(read)
-        if builder.stop:
+        if p.stop:
             logger.info("project finished")
             # дочитываю последние данные
             while (read := controller.write_websocket()) is not None:
                 await websocket.send_json(read)
             break
     del controller
-    del builder
+    del p
 
 
 if __name__ == '__main__':
