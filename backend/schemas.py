@@ -5,30 +5,22 @@ from pydantic import BaseModel, Field  # noqa
 from backend.storage.models import UI, Steps, Content
 
 
-class GetPages(BaseModel):
-    """Получить множество проектов"""
-    class GetShortPages(BaseModel):
-        """При получении множества проектов каждый проект будет представлен в кратком формате"""
-        id: int
-        name: str = ""
-        description: str = ""
-        short_description: str = ""
-        version: str = ""
-        visible: bool = False
-
-    data: list[GetShortPages]
-
-
 class GetPage(BaseModel):
     """Получить один проект с подробным описанием"""
     id: int
     name: str = Field(min_length=1)
     description: str = ""
-    short_description: str = Field(min_length=0)
+    short_description: str = Field(min_length=1)
     version: str = ""
     visible: bool = False
+    container: str = Field(min_length=1)
     ui: UI
     scenario: Steps
+
+
+class GetPages(BaseModel):
+    """Получить множество страниц"""
+    data: list[GetPage]
 
 
 class User(BaseModel):
@@ -39,8 +31,8 @@ class User(BaseModel):
 
 class GetProject(BaseModel):
     id: int
-    name: str = ""
-    description: str = ""
+    name: str = Field(min_length=1)
+    description: str = Field(min_length=1)
     public: bool
     content: Content
 
