@@ -4,11 +4,11 @@ from fastapi import Body, APIRouter, Depends
 from fastapi.responses import Response
 from fastapi.exceptions import HTTPException
 from sqlalchemy.exc import IntegrityError
-from starlette.requests import Request # noqa
+from starlette.requests import Request  # noqa
 
-from google.oauth2 import id_token # noqa
-from google.auth.transport import requests # noqa
-from google.auth.exceptions import GoogleAuthError # noqa
+from google.oauth2 import id_token  # noqa
+from google.auth.transport import requests  # noqa
+from google.auth.exceptions import GoogleAuthError  # noqa
 
 from backend.storage.db import Session
 from backend.storage import models
@@ -39,15 +39,30 @@ async def post_page(page: GetPage, user: User = Depends(verify_auth)):
     if user.access != 'admin':
         raise HTTPException(403, "user")
     with Session() as db:
-
         if page.id == 0:
             # create new
-            new_page = models.Page(description=page.description, version=page.version, visible=False, name=page.name, container="", short_description=page.short_description, scenario=page.scenario, ui=page.ui)
+            new_page = models.Page(description=page.description, version=page.version, visible=False, name=page.name,
+                                   container=page.container, short_description=page.short_description,
+                                   scenario=page.scenario, ui=page.ui)
             try:
                 db.add(new_page)
                 db.commit()
             except IntegrityError:
                 raise HTTPException(400, "page with this short description already exists")
+        else:
+            new_page = db.query(models.Page).get(page.id)
+            if new_page:
+                new_page.description = page.description
+                new_page.version = page.version
+                new_page.visible = page.visible
+                new_page.name = page.name
+                new_page.container = page.container
+                new_page.short_description = page.short_description
+                new_page.scenario = page.scenario
+                new_page.ui = page.ui
+                db.commit()
+            else:
+                raise HTTPException(404, "page not found")
         return page
 
 
@@ -69,7 +84,8 @@ async def get_project(project_id: int, user: User = Depends(verify_auth)):
     with Session() as db:
         project = db.query(models.Project).get(project_id)
         if project:
-            print(project.dict())
+            if user.access == 'user' and not project.public:
+                raise HTTPException(404, "project not found")
             return GetProject(**project.dict())
         raise HTTPException(404, "project not found")
 
@@ -79,6 +95,8 @@ async def get_project(project_id: int, user: User = Depends(verify_auth)):
     with Session() as db:
         project = db.query(models.Project).get(project_id)
         if project:
+            if user.access == 'user' and not project.public:
+                raise HTTPException(404, "project not found")
             ids = project.content.Ids()
             pages = db.query(models.Page).filter(models.Page.id.in_(ids)).all()
             return GetFullProject(**project.dict(), pages=[p.dict() for p in pages])
@@ -88,8 +106,38 @@ async def get_project(project_id: int, user: User = Depends(verify_auth)):
 @api.get("/projects", response_model=list[GetProject])
 async def get_projects(user: User = Depends(verify_auth)):
     with Session() as db:
-        data = db.query(models.Project).all()
+        if user.access == 'admin':
+            data = db.query(models.Project).all()
+        else:
+            data = db.query(models.Project).filter_by(public=True).all()
         return [p.dict() for p in data]
+
+
+@api.post("/project", response_model=GetProject)
+async def post_project(project: GetProject, user: User = Depends(verify_auth)):
+    if user.access != 'admin':
+        raise HTTPException(403, "user")
+    with Session() as db:
+
+        if project.id == 0:
+            # create new
+            new_project = models.Project(name=project.name, description=project.description, public=project.public, content=project.content)
+            try:
+                db.add(new_project)
+                db.commit()
+            except IntegrityError as e:
+                raise HTTPException(400, e.detail)
+        else:
+            new_project = db.query(models.Project).get(project.id)
+            if not new_project:
+                raise HTTPException(404, "project not found")
+            new_project.name = project.name
+            new_project.description = project.description
+            new_project.public = project.public
+            new_project.content = project.content
+            db.commit()
+
+        return new_project.dict()
 
 
 @api.post("/auth", response_model=User)
