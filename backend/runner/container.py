@@ -4,6 +4,7 @@ import io
 import time
 from uuid import uuid4 as uuid
 from typing import Literal
+from string import Template
 
 client = docker.from_env()
 
@@ -79,6 +80,11 @@ class Container:
         self.containers = [self.container]
         # Переданные параметры среды
         self.environment = {}
+        # переменные, которые передаются в команды запуска
+        # >>> from string import Template
+        # >>> Template('hello $world').substitute(world=1234)
+        # 'hello 1234'
+        self.variables = {}
 
     @staticmethod
     def _make_archive(filename: str, data: bytes):
@@ -101,6 +107,13 @@ class Container:
     def add_environment(self, name: str, value: str) -> None:
         """Загрузка переменной среды в контейнер"""
         self.environment[name] = value
+
+    def add_variable(self, name: str, value: str) -> None:
+        self.variables[name] = value
+
+    def format_command(self, command: str) -> str:
+        # вычисляю шаблон
+        return Template(command).safe_substitute(self.variables)
 
     def command(self, command) -> Command:
         """Выполнить команду, аналог docker exec"""

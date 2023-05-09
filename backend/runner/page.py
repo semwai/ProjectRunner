@@ -39,10 +39,11 @@ class Page:
                 self.container.add_file(name, data)
                 self.dict['exitCode'] = None
             case Run():
-                command, stdin, stdout, exitCode, echo = inst.command, inst.stdin, inst.stdout, inst.exitCode, inst.echo
+                raw_command, stdin, stdout, exitCode, echo = inst.command, inst.stdin, inst.stdout, inst.exitCode, inst.echo
+                format_command = self.container.format_command(raw_command)
                 if echo:
-                    self.controller.write({'stdout': command + '\n'})
-                c = self.container.command(command)
+                    self.controller.write({'stdout': format_command + '\n'})
+                c = self.container.command(format_command)
                 while c.status()['Running']:
                     # если проект завершен извне
                     if self._kill:
@@ -95,6 +96,9 @@ class Page:
 
     def add_environment(self, name: str, value: str):
         self.container.add_environment(name, value)
+
+    def add_variable(self, name: str, value: str):
+        self.container.add_variable(name, value)
 
     def run(self):
         print(self.steps)

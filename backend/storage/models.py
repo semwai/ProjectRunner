@@ -42,7 +42,7 @@ class UI(BaseModel):
         for d in self.data:
             match d.destination:
                 case "param":
-                    pass
+                    project.add_variable(d.name, user_input[d.name])
                 case "env":
                     project.add_environment(d.env, user_input[d.name])
                 case "file":
