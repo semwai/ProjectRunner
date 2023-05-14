@@ -2,7 +2,7 @@ from pydantic import BaseModel  # noqa
 import pathlib
 
 from backend.storage.db import Session
-from backend.storage.models import Page, Steps, Print, Run, UI, Input, Project, Content, Entry, User
+from backend.storage.models import Page, Steps, Print, Run, UI, Input
 
 
 def ex(name: str) -> str:
@@ -78,13 +78,13 @@ func go() int {
 """
 pages = [
     Page(short_description="go example", name="Go", description=goMDdesc, container="golang:alpine", ui=goUI, scenario=goScenario),  # noqa
-    Page(short_description="java example",name="Java", description="Java language compiler", container="openjdk:11", ui=javaUI,
+    Page(short_description="java example",name="Java", description="Java language compiler", container="openjdk:11", ui=javaUI, # noqa
          scenario=javaScenario),  # noqa
-    Page(short_description="z3 example", name="Z3", description="Z3 language", container="ghcr.io/z3prover/z3:ubuntu-20.04-bare-z3-sha-e3a4425",
+    Page(short_description="z3 example", name="Z3", description="Z3 language", container="ghcr.io/z3prover/z3:ubuntu-20.04-bare-z3-sha-e3a4425", # noqa
          ui=z3UI, scenario=Z3Scenario),  # noqa
-    Page(short_description="python example", name="Python", description="Python 3.10", container="python:3.10-alpine", ui=pythonUI,
+    Page(short_description="python example", name="Python", description="Python 3.10", container="python:3.10-alpine", ui=pythonUI, # noqa
          scenario=pythonScenario),  # noqa
-    Page(short_description="nusmv example",name="nusmv", version="1", description="nusmv",
+    Page(short_description="nusmv example",name="nusmv", version="1", description="nusmv", # noqa
          container="semwai/nusmv:2.6.0", ui=nusmvUI, scenario=nusmvScenario)  # noqa
 ]
 

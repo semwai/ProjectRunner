@@ -104,7 +104,7 @@ async def delete_project(id: int, user: User = Depends(verify_auth)):
 
 
 @api.get("/project/{project_id}/json", response_model=GetFullProject)
-async def get_project(project_id: int, user: User = Depends(verify_auth)):
+async def get_project_json(project_id: int, user: User = Depends(verify_auth)):
     with Session() as db:
         project = db.query(models.Project).get(project_id)
         if project:
@@ -134,7 +134,8 @@ async def post_project(project: GetProject, user: User = Depends(verify_auth)):
 
         if project.id == 0:
             # create new
-            new_project = models.Project(name=project.name, description=project.description, public=project.public, content=project.content)
+            new_project = models.Project(name=project.name, description=project.description, public=project.public,
+                                         content=project.content)
             try:
                 db.add(new_project)
                 db.commit()

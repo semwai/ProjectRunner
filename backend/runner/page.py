@@ -7,6 +7,7 @@ from backend.storage.models import File, Run, Print, Steps, If
 class Page:
     """Проект принимает последовательность команд, которые выполняет согласно сценарию. Данные получаются и
     отправляются на контроллер """
+
     def __init__(self, controller: Controller, container: Container, program: Steps):
         self.controller = controller
         self.steps = program
@@ -39,7 +40,8 @@ class Page:
                 self.container.add_file(name, data)
                 self.dict['exitCode'] = None
             case Run():
-                raw_command, stdin, stdout, exitCode, echo = inst.command, inst.stdin, inst.stdout, inst.exitCode, inst.echo
+                raw_command, stdin, stdout, exitCode, echo \
+                    = inst.command, inst.stdin, inst.stdout, inst.exitCode, inst.echo
                 format_command = self.container.format_command(raw_command)
                 if echo:
                     self.controller.write({'stdout': format_command + '\n'})
@@ -75,7 +77,7 @@ class Page:
                 self.queue = [*data, *self.queue]
                 self.dict['exitCode'] = None
             case If():
-                variable, c, value, if_branch, else_branch = inst.condition.variable, inst.condition.c, inst.condition.value, inst.if_branch, inst.else_branch # noqa
+                variable, c, value, if_branch, else_branch = inst.condition.variable, inst.condition.c, inst.condition.value, inst.if_branch, inst.else_branch  # noqa
                 flag = None
                 match c:
                     case '!=':
