@@ -82,64 +82,14 @@ pages = [
          scenario=javaScenario),  # noqa
     Page(short_description="z3 example", name="Z3", description="Z3 language", container="ghcr.io/z3prover/z3:ubuntu-20.04-bare-z3-sha-e3a4425",
          ui=z3UI, scenario=Z3Scenario),  # noqa
-    Page(short_description="python example",name="Python", description="Python 3.10", container="python:3.10-alpine", ui=pythonUI,
+    Page(short_description="python example", name="Python", description="Python 3.10", container="python:3.10-alpine", ui=pythonUI,
          scenario=pythonScenario),  # noqa
     Page(short_description="nusmv example",name="nusmv", version="1", description="nusmv",
          container="semwai/nusmv:2.6.0", ui=nusmvUI, scenario=nusmvScenario)  # noqa
 ]
 
-projects = [
-    Project(name="Первый проект", description="Описание первого проекта", content=Content(
-        data=[Entry(id=4, short_description="Python 3.10"), Entry(id=5, short_description="nusmw")])),  # noqa
-    Project(name="Второй проект со всеми страницами", description="Описание второго проекта",
-            content=Content(
-                data=[
-                    Entry(id=3, short_description="z3"),
-                    Content(data=[Entry(id=1, short_description="Go simple goroutines example"),
-                                  Entry(id=2, short_description="Java example"),
-                                  Content(data=[Entry(id=1, short_description="Уровень"),
-                                                Content(
-                                                    data=[Entry(id=1, short_description="Вложенности"),
-                                                          Content(data=[
-                                                              Entry(id=1, short_description="Не"),
-                                                              Entry(id=1, short_description="Ограничен")]),
-                                                          ]),
-                                                ]),
-                                  ]),
-                    Entry(id=4, short_description="Python 3.10"),
-                    Entry(id=5, short_description="nusmw")])),
-    Project(name="Go book", description="Интерактивная книга по языку GO",
-            content=Content(
-                description="Оглавление",
-                data=[
-                    Entry(id=1, short_description="Введение в Go"),
-                    Content(
-                        description="Глава 1",
-                        data=[Entry(id=1, short_description="Структура программы"),
-                              Entry(id=1, short_description="Переменные"),
-                              Entry(id=1, short_description="Типы данных"),
-                              Entry(id=1, short_description="Константы"),
-                              Entry(id=1, short_description="Операторы"),
-                              Entry(id=1, short_description="Циклы"),
-                              ]),
-                    Content(
-                        description="Глава 2",
-                        data=[Entry(id=1, short_description="Указатели"),
-                              Entry(id=1, short_description="Функции и указатели"),
-                              ]),
-                    Content(
-                        description="Горутины",
-                        data=[Entry(id=1, short_description="Введение"),
-                              Entry(id=1, short_description="Пример"),
-                              ]),
-                    Entry(id=1, short_description="Вывод")]))
-]
-
 if __name__ == "__main__":
     with Session() as db:
-        for p in projects:
-            db.add(p)
         for p in pages:
             db.add(p)
-        db.add(User(name='semwai', email='e14s@mail.ru', access='admin'))
         db.commit()
